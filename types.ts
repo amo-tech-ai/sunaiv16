@@ -12,6 +12,11 @@ export interface UserData {
   readinessScore?: number;
   readinessFeedback?: string;
   roadmap?: RoadmapPhase[];
+  readinessAreas?: {
+    data: number;
+    infrastructure: number;
+    culture: number;
+  };
 }
 
 export interface RoadmapPhase {

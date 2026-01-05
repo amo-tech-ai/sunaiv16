@@ -14,7 +14,6 @@ import {
 const STORAGE_KEY = 'sun_ai_wizard_state';
 
 const App: React.FC = () => {
-  // Initialization with localStorage rehydration
   const [step, setStep] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_step');
     return saved ? parseInt(saved, 10) : 1;
@@ -49,7 +48,6 @@ const App: React.FC = () => {
 
   const activeStreamRef = useRef<number>(0);
 
-  // Persistence logic
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_data', JSON.stringify(userData));
     localStorage.setItem(STORAGE_KEY + '_step', step.toString());
@@ -79,7 +77,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Logic for Step 1 -> Analysis with Search Grounding
   useEffect(() => {
     if (step === 1 && userData.industry && userData.description.length > 30) {
       setIntelligence(prev => ({ ...prev, status: 'analyzing', notes: 'Initiating market research and context verification...' }));
@@ -100,7 +97,6 @@ const App: React.FC = () => {
     }
   }, [step, userData.industry, userData.description.length > 30]);
 
-  // Logic for Step 2 -> Diagnostics
   useEffect(() => {
     if (step === 2) {
       const prompt = `We are moving into diagnostics for ${userData.companyName}. We are identifying friction in ${userData.industry}. Explain why a deep diagnostic of sales blockers and manual labor is critical for a high-growth organization.`;
@@ -122,7 +118,6 @@ const App: React.FC = () => {
     }
   }, [step]);
 
-  // Logic for Step 3 -> System Architecture
   useEffect(() => {
     if (step === 3) {
       const prompt = `Architecting AI systems for ${userData.companyName}. They are facing ${userData.blocker} and spending too much time on ${userData.manualWork}. Explain the philosophy of choosing systems that reduce drag and increase revenue velocity.`;
@@ -144,7 +139,6 @@ const App: React.FC = () => {
     }
   }, [step]);
 
-  // Logic for Step 4 -> Readiness
   useEffect(() => {
     if (step === 4) {
       const prompt = `Assessing the operational readiness of ${userData.companyName} for implementing ${userData.selectedSystems.join(', ')}. Mention why data integrity and process clarity are prerequisites for AI success.`;
@@ -153,7 +147,11 @@ const App: React.FC = () => {
       getReadinessAssessment(userData)
         .then(res => {
           setAssessment(res);
-          updateUserData({ readinessScore: res.score, readinessFeedback: res.feedback });
+          updateUserData({ 
+            readinessScore: res.score, 
+            readinessFeedback: res.feedback,
+            readinessAreas: res.areaScores
+          });
           setIntelligence(prev => ({
             ...prev,
             observations: ["Identifying data infrastructure gaps", "Evaluating implementation risk"]
@@ -162,7 +160,6 @@ const App: React.FC = () => {
     }
   }, [step]);
 
-  // Logic for Step 5 -> Roadmap
   useEffect(() => {
     if (step === 5) {
       const prompt = `Synthesizing the 90-day execution roadmap for ${userData.companyName}. The focus is on ${userData.priority}. Summarize why a phased approach starting with foundations is the most efficient path to long-term automation.`;
