@@ -19,32 +19,15 @@ const App: React.FC = () => {
   const [industryContent, setIndustryContent] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<SystemRecommendation[]>([]);
   const [assessment, setAssessment] = useState<any>(null);
-  const [isKeySelecting, setIsKeySelecting] = useState(false);
 
-  // Requirement: API Key Selection for Pro models
-  useEffect(() => {
-    const checkKey = async () => {
-      if (typeof window.aistudio !== 'undefined') {
-        const hasKey = await window.aistudio.hasSelectedApiKey();
-        if (!hasKey && step > 2) {
-          // If we are at Step 3 (Pro model requirement), force selection
-          await window.aistudio.openSelectKey();
-        }
-      }
-    };
-    checkKey();
-  }, [step]);
-
+  // Transitioned to Gemini 3 Flash - No longer mandatory to force key selection
   const handleKeySelection = async () => {
     if (typeof window.aistudio !== 'undefined') {
-      setIsKeySelecting(true);
       await window.aistudio.openSelectKey();
-      setIsKeySelecting(false);
-      // Proceeding immediately as per instructions to avoid race conditions
     }
   };
 
-  // Phase 1: Context Research (Grounding + Analysis)
+  // Phase 1: Context Research
   useEffect(() => {
     if (step === 1 && userData.industry && userData.description.length > 30) {
       const research = async () => {
@@ -75,10 +58,10 @@ const App: React.FC = () => {
     }
   }, [step, userData.industry, userData.description.length]);
 
-  // Phase 2: Diagnostics Explanation (Streaming)
+  // Phase 2: Diagnostics Explanation
   useEffect(() => {
     if (step === 2) {
-      const prompt = `We are moving into diagnostics for ${userData.companyName}. We are identifying friction in the ${userData.industry} sector. Explain why a deep diagnostic of sales blockers and manual labor is critical for a high-growth organization, especially in the current economic climate.`;
+      const prompt = `We are moving into diagnostics for ${userData.companyName}. We are identifying friction in the ${userData.industry} sector. Explain why a deep diagnostic of sales blockers and manual labor is critical for a high-growth organization.`;
       handleStreamingNotes(prompt);
 
       if (userData.industry && !industryContent) {
@@ -98,10 +81,10 @@ const App: React.FC = () => {
     }
   }, [step]);
 
-  // Phase 3: System Architecture (Pro Model + Thinking)
+  // Phase 3: System Architecture
   useEffect(() => {
     if (step === 3) {
-      const prompt = `Architecting strategic AI systems for ${userData.companyName}. Based on identified blockers in ${userData.blocker} and repetitive work in ${userData.manualWork}, explain the methodology of selecting specific high-ROI systems over generic tools.`;
+      const prompt = `Architecting strategic AI systems for ${userData.companyName}. Based on identified blockers in ${userData.blocker} and repetitive work in ${userData.manualWork}, explain the methodology of selecting specific high-ROI systems.`;
       handleStreamingNotes(prompt);
 
       if (recommendations.length === 0) {
@@ -118,16 +101,17 @@ const App: React.FC = () => {
             }));
           })
           .catch(err => {
+            console.error("Architecture recommendation error:", err);
             if (err.message?.includes("not found")) handleKeySelection();
           });
       }
     }
   }, [step]);
 
-  // Phase 4: Readiness Assessment (Pro Model + High Thinking Budget)
+  // Phase 4: Readiness Assessment
   useEffect(() => {
     if (step === 4) {
-      const prompt = `Conducting a multi-dimensional implementation readiness audit for ${userData.companyName}. Explain the correlation between data maturity and the success of ${userData.selectedSystems.join(', ')}.`;
+      const prompt = `Conducting a multi-dimensional implementation readiness audit for ${userData.companyName}. Explain the correlation between data maturity and automation success.`;
       handleStreamingNotes(prompt);
 
       getReadinessAssessment(userData)
@@ -148,15 +132,16 @@ const App: React.FC = () => {
           }));
         })
         .catch(err => {
+          console.error("Readiness audit error:", err);
           if (err.message?.includes("not found")) handleKeySelection();
         });
     }
   }, [step]);
 
-  // Phase 5: Roadmap Strategy (Pro Model + Complex Reasoning)
+  // Phase 5: Roadmap Strategy
   useEffect(() => {
     if (step === 5) {
-      const prompt = `Synthesizing the final execution roadmap for ${userData.companyName}. Focus on the transition from ${userData.blocker} to a high-velocity automated growth engine. Summarize why this specific sequence is the path of least resistance.`;
+      const prompt = `Synthesizing the final execution roadmap for ${userData.companyName}. Focus on the transition from ${userData.blocker} to a high-velocity automated growth engine.`;
       handleStreamingNotes(prompt);
 
       getRoadmap(userData)
@@ -172,6 +157,7 @@ const App: React.FC = () => {
           }));
         })
         .catch(err => {
+          console.error("Roadmap generation error:", err);
           if (err.message?.includes("not found")) handleKeySelection();
         });
     }
@@ -209,16 +195,6 @@ const App: React.FC = () => {
           <div className="space-y-1.5">
             <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Core Focus</span>
             <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.priority}</p>
-          </div>
-        )}
-        {step > 3 && userData.selectedSystems.length > 0 && (
-          <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Architected Systems</span>
-            <div className="space-y-1">
-              {userData.selectedSystems.map(s => (
-                <p key={s} className="text-[10px] font-bold text-[#444] uppercase tracking-widest">• {s}</p>
-              ))}
-            </div>
           </div>
         )}
       </div>
@@ -260,17 +236,15 @@ const App: React.FC = () => {
           </ul>
         </div>
       )}
-
-      {step > 2 && (
-        <div className="pt-8 border-t border-[#EFE9E4]">
-          <button 
-            onClick={handleKeySelection}
-            className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-600 hover:text-amber-800 transition-colors"
-          >
-            Update Strategic API Key
-          </button>
-        </div>
-      )}
+      
+      <div className="pt-8 border-t border-[#EFE9E4]">
+        <button 
+          onClick={handleKeySelection}
+          className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#CCC] hover:text-[#1A1A1A] transition-colors"
+        >
+          Optional: Strategic API Key
+        </button>
+      </div>
     </div>
   );
 
