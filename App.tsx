@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ThreePanelLayout from './components/ThreePanelLayout';
 import { Step1Context } from './components/wizard/Step1Context';
@@ -20,7 +21,7 @@ const App: React.FC = () => {
   const [recommendations, setRecommendations] = useState<SystemRecommendation[]>([]);
   const [assessment, setAssessment] = useState<any>(null);
 
-  // Transitioned to Gemini 3 Flash - No longer mandatory to force key selection
+  // Key selection only if needed for Pro models
   const handleKeySelection = async () => {
     if (typeof window.aistudio !== 'undefined') {
       await window.aistudio.openSelectKey();
@@ -34,7 +35,7 @@ const App: React.FC = () => {
         setIntelligence(prev => ({ 
           ...prev, 
           status: 'analyzing', 
-          notes: 'Initiating global market research and context verification...' 
+          notes: 'Looking at your market position and sector movement...' 
         }));
         
         try {
@@ -44,9 +45,9 @@ const App: React.FC = () => {
             status: 'complete',
             notes: res.text,
             observations: [
-              "Verified digital footprint through real-time research",
-              "Identified sector-specific competitive moats",
-              "Established baseline AI readiness parameters"
+              "Confirmed market position via real-time research",
+              "Identified specific competitive moats in your sector",
+              "Establishing growth baseline"
             ],
             citations: res.citations
           }));
@@ -61,11 +62,11 @@ const App: React.FC = () => {
   // Phase 2: Diagnostics Explanation
   useEffect(() => {
     if (step === 2) {
-      const prompt = `We are moving into diagnostics for ${userData.companyName}. We are identifying friction in the ${userData.industry} sector. Explain why a deep diagnostic of sales blockers and manual labor is critical for a high-growth organization.`;
+      const prompt = `We are looking at where the friction is for ${userData.companyName} in the ${userData.industry} sector. Explain in simple business terms why finding these roadblocks is the first step to buying back the team's time.`;
       handleStreamingNotes(prompt);
 
       if (userData.industry && !industryContent) {
-        getIndustrySpecificQuestions(userData.industry, "Executive Model")
+        getIndustrySpecificQuestions(userData.industry, "Executive Partner")
           .then(setIndustryContent)
           .catch(console.error);
       }
@@ -73,8 +74,8 @@ const App: React.FC = () => {
       setIntelligence(prev => ({
         ...prev,
         observations: [
-          `Auditing ${userData.industry} specific friction points`,
-          "Mapping operational bottlenecks to revenue velocity",
+          `Finding friction in ${userData.industry}`,
+          "Mapping bottlenecks to revenue loss",
           "Identifying hidden labor costs"
         ]
       }));
@@ -84,7 +85,7 @@ const App: React.FC = () => {
   // Phase 3: System Architecture
   useEffect(() => {
     if (step === 3) {
-      const prompt = `Architecting strategic AI systems for ${userData.companyName}. Based on identified blockers in ${userData.blocker} and repetitive work in ${userData.manualWork}, explain the methodology of selecting specific high-ROI systems.`;
+      const prompt = `Designing a growth engine for ${userData.companyName}. Based on the problems with ${userData.blocker} and ${userData.manualWork}, explain how these systems will clear the clutter and speed things up.`;
       handleStreamingNotes(prompt);
 
       if (recommendations.length === 0) {
@@ -94,9 +95,9 @@ const App: React.FC = () => {
             setIntelligence(prev => ({ 
               ...prev, 
               observations: [
-                "Prioritizing modular architectural integrity",
-                "Aligning systems with executive growth targets",
-                "Optimizing for 90-day time-to-value"
+                "Prioritizing ease of use and speed",
+                "Aligning tools with your core growth goals",
+                "Focusing on the first 90 days"
               ] 
             }));
           })
@@ -111,7 +112,7 @@ const App: React.FC = () => {
   // Phase 4: Readiness Assessment
   useEffect(() => {
     if (step === 4) {
-      const prompt = `Conducting a multi-dimensional implementation readiness audit for ${userData.companyName}. Explain the correlation between data maturity and automation success.`;
+      const prompt = `Looking at how ready ${userData.companyName} is to scale. Explain why clean data and solid team habits are more important than the tools themselves.`;
       handleStreamingNotes(prompt);
 
       getReadinessAssessment(userData)
@@ -125,9 +126,9 @@ const App: React.FC = () => {
           setIntelligence(prev => ({ 
             ...prev, 
             observations: [
-              "Calculated operational maturity coefficient",
-              "Identified structural implementation risks",
-              "Synthesized remediation priorities"
+              "Measured company scale potential",
+              "Identified risks to moving fast",
+              "Mapping out what to fix first"
             ] 
           }));
         })
@@ -141,7 +142,7 @@ const App: React.FC = () => {
   // Phase 5: Roadmap Strategy
   useEffect(() => {
     if (step === 5) {
-      const prompt = `Synthesizing the final execution roadmap for ${userData.companyName}. Focus on the transition from ${userData.blocker} to a high-velocity automated growth engine.`;
+      const prompt = `Creating the final plan for ${userData.companyName}. Focus on how we move from ${userData.blocker} to a business that practically runs itself.`;
       handleStreamingNotes(prompt);
 
       getRoadmap(userData)
@@ -150,9 +151,9 @@ const App: React.FC = () => {
           setIntelligence(prev => ({ 
             ...prev, 
             observations: [
-              "Sequenced foundation-first milestones",
-              "Mapped reclaimed time to growth reinvestment",
-              "Finalizing executive implementation checklist"
+              "Sequencing for quick wins",
+              "Planning to buy back team time",
+              "Setting up the foundation"
             ] 
           }));
         })
@@ -193,7 +194,7 @@ const App: React.FC = () => {
         )}
         {step > 2 && userData.priority && (
           <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Core Focus</span>
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Goal</span>
             <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.priority}</p>
           </div>
         )}
@@ -212,7 +213,7 @@ const App: React.FC = () => {
 
       {intelligence.citations && intelligence.citations.length > 0 && (
         <div className="space-y-4 pt-8 border-t border-[#EFE9E4]">
-          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Verified Research Sources</h4>
+          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Market Sources</h4>
           <div className="space-y-2">
             {intelligence.citations.map((cite, i) => (
               <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="block text-xs text-amber-700 hover:text-amber-900 transition-colors font-medium underline decoration-amber-200">
@@ -225,7 +226,7 @@ const App: React.FC = () => {
 
       {intelligence.observations.length > 0 && (
         <div className="space-y-8 pt-10 border-t border-[#EFE9E4]">
-          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Consultant Observations</h4>
+          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Partner Notes</h4>
           <ul className="space-y-6">
             {intelligence.observations.map((obs, i) => (
               <li key={i} className="flex gap-6 items-start">
@@ -242,7 +243,7 @@ const App: React.FC = () => {
           onClick={handleKeySelection}
           className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#CCC] hover:text-[#1A1A1A] transition-colors"
         >
-          Optional: Strategic API Key
+          Executive Security Key
         </button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserData } from '../../types';
 import { RoadmapSkeleton } from '../ui/SkeletonLoading';
@@ -13,8 +14,8 @@ export const Step5Roadmap: React.FC<StepProps> = ({ data, onLaunch }) => {
   return (
     <div className="space-y-16 animate-fade-enter-active">
       <header>
-        <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">Your 90-day execution plan</h1>
-        <p className="text-lg text-[#666] font-light font-body-serif italic">“The calculated sequence for operational transformation.”</p>
+        <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">Your Execution Plan</h1>
+        <p className="text-lg text-[#666] font-light font-body-serif italic">“The exact steps to turn on your growth engine and buy back your time.”</p>
       </header>
 
       {isLoading ? (
@@ -26,7 +27,7 @@ export const Step5Roadmap: React.FC<StepProps> = ({ data, onLaunch }) => {
               <div className="absolute left-[-7px] top-0 w-3.5 h-3.5 rounded-full bg-[#1A1A1A] transition-transform group-hover:scale-125 ring-4 ring-[#FDFCFB]" />
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-3">
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-amber-600 font-bold">Phase 0{idx + 1}</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-amber-600 font-bold">Month 0{idx + 1}</span>
                   <div className="h-px w-12 bg-[#EFE9E4]"></div>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-[#AAA] font-bold">{phase.duration}</span>
                 </div>
@@ -45,13 +46,13 @@ export const Step5Roadmap: React.FC<StepProps> = ({ data, onLaunch }) => {
 
           <div className="pt-12 border-t border-[#EFE9E4] flex flex-col items-center gap-8">
             <p className="text-sm text-[#888] font-body-serif italic max-w-md text-center">
-              “This plan is architected to prioritize high-leverage outcomes and foundational data integrity.”
+              “This plan clears the clutter first, so you can scale without breaking your culture.”
             </p>
              <button 
               onClick={onLaunch}
               className="w-full py-6 text-sm uppercase tracking-[0.4em] font-bold bg-[#1A1A1A] text-white hover:bg-[#333] transition-all shadow-xl shadow-amber-900/10"
             >
-              Launch Client Dashboard
+              Open Your Hub
             </button>
           </div>
         </div>

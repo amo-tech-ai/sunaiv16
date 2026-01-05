@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserData, IntelligenceState } from '../../types';
 
@@ -16,17 +17,17 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
     <div className="space-y-16 animate-fade-enter-active">
       <header>
         <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">
-          {industryContent?.dynamicTitle || `Where is growth being restricted?`}
+          {industryContent?.dynamicTitle || `Where is the friction?`}
         </h1>
-        <p className="text-lg text-[#666] font-light italic font-body-serif">“We must identify the primary friction points before designing the system.”</p>
+        <p className="text-lg text-[#666] font-light italic font-body-serif">“We must identify exactly where you are losing time and money before we build.”</p>
       </header>
 
       <div className="space-y-12">
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Revenue & Acquisition</h2>
-          <p className="text-base text-[#666] font-body-serif">Which area is currently the biggest blocker to growing your business?</p>
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Growth & Revenue</h2>
+          <p className="text-base text-[#666] font-body-serif">Where is your current process losing deals or missing opportunities?</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(industryContent?.salesOptions || ["Scaling leads", "Sales efficiency", "Market positioning", "Conversion velocity"]).map((opt: string) => (
+            {(industryContent?.salesOptions || ["Lead follow-up", "Sales pitching", "Market position", "Closing speed"]).map((opt: string) => (
               <button 
                 key={opt}
                 onClick={() => updateData({ blocker: opt })}
@@ -39,10 +40,10 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Operational Drag</h2>
-          <p className="text-base text-[#666] font-body-serif">Where does your team spend the most time on repetitive work?</p>
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Team Capacity</h2>
+          <p className="text-base text-[#666] font-body-serif">What is eating most of your team's time every day?</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(industryContent?.manualWorkOptions || ["Client reporting", "Document creation", "Data orchestration", "Support handling"]).map((opt: string) => (
+            {(industryContent?.manualWorkOptions || ["Client reporting", "Document creation", "Task management", "Admin & Support"]).map((opt: string) => (
               <button 
                 key={opt}
                 onClick={() => updateData({ manualWork: opt })}
@@ -55,10 +56,10 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Execution Speed</h2>
-          <p className="text-base text-[#666] font-body-serif">How long does it usually take to complete a key client action?</p>
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Delivery Speed</h2>
+          <p className="text-base text-[#666] font-body-serif">How long does it take from 'Hello' to a finished client action?</p>
           <div className="flex flex-wrap gap-4">
-            {["< 24 Hours", "2-3 Days", "1 Week", "2 Weeks+"].map((opt) => (
+            {["Same Day", "2-3 Days", "1 Week", "Multiple Weeks"].map((opt) => (
               <button 
                 key={opt}
                 onClick={() => updateData({ speed: opt })}
@@ -71,10 +72,10 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Executive Priority</h2>
-          <p className="text-base text-[#666] font-body-serif">If you could fix one thing right now, what would have the most impact?</p>
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Strategic Priority</h2>
+          <p className="text-base text-[#666] font-body-serif">If you could fix one thing to change the game this year, what would it be?</p>
           <div className="grid grid-cols-1 gap-4">
-            {(industryContent?.priorityOptions || ["Increasing Net Revenue", "Time Reclaiming", "Unit Cost Reduction", "Client Experience"]).map((opt: string) => (
+            {(industryContent?.priorityOptions || ["Increasing Profit", "Buying Back Time", "Lowering Unit Costs", "Better Client Results"]).map((opt: string) => (
               <button 
                 key={opt}
                 onClick={() => updateData({ priority: opt })}
@@ -92,7 +93,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         onClick={nextStep}
         className={`w-full py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
       >
-        View Recommended Systems →
+        Design the Growth Engine →
       </button>
     </div>
   );
