@@ -39,10 +39,10 @@ export async function getReadinessAssessment(data: UserData) {
     Industry: ${data.industry}
     Description: ${data.description}
     
-    Evaluate three key dimensions: Data Maturity, Technical Infrastructure, and Organizational Culture.`,
+    Evaluate three key dimensions: Data Maturity, Technical Infrastructure, and Organizational Culture. Be critical but constructive.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 4096 },
+      thinkingConfig: { thinkingBudget: 8192 }, // Higher budget for deeper reasoning
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -75,7 +75,9 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
     contents: `Final 90-Day Execution Roadmap for ${data.companyName}.
     Systems to Implement: ${data.selectedSystems.join(', ')}
     Executive Priority: ${data.priority}
-    Readiness Context: ${data.readinessFeedback}`,
+    Readiness Context: ${data.readinessFeedback}
+    
+    Create a highly sequenced, outcome-driven roadmap.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
