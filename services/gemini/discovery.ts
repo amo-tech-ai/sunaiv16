@@ -4,23 +4,26 @@ import { getAI, SYSTEM_INSTRUCTION } from "./client";
 /**
  * Screen 1: Strategic Researcher Agent
  * Uses Google Search Grounding to verify market position and digital footprint.
+ * Specifically prioritizes analyzing the company's website for service offerings and friction.
  */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
   
   const prompt = `
-    Conduct an executive-level market analysis for "${companyName}".
-    Sector: ${industry}
-    Website: ${website || "Not provided"}
-    Description: ${description}
+    Perform a deep-dive research analysis for "${companyName}" in the ${industry} sector.
+    Target Website: ${website || "Not provided"}
+    Stated Mission: ${description}
 
-    TASK:
-    1. Grounded Search: Use the search tool to find the company's real-world presence, service offerings, and competitive niche.
-    2. Model Identification: Classify their business model (e.g., Enterprise B2B, High-Ticket Agency, DTC Luxury).
-    3. Strategic Gap Detection: Identify 3 specific areas where their current digital footprint suggests "manual drag" or missed AI opportunities.
+    TASK PRIORITY:
+    1. Website Analysis: Use the search tool to prioritize crawling the provided URL. Extract a specific list of their current service offerings.
+    2. Manual Friction Audit: Identify indicators on their website or digital presence that suggest manual processes (e.g., static forms instead of interactive lead capture, absence of AI chat, generic scheduling tools).
+    3. Market Positioning: Determine their core business model (e.g., "Enterprise SaaS", "Luxury Boutique Retail", "High-Ticket Consulting").
+    4. Strategic Insight: Synthesize 3 high-leverage observations about where they are leaking revenue or speed.
 
-    OUTPUT:
-    Provide a professional briefing for the executive right-panel. Focus on clarity and authority.
+    OUTPUT SCHEMA:
+    - narrativeBriefing: A high-end, editorial summary of your research findings.
+    - detectedModel: A 3-5 word label identifying the business model.
+    - marketObservations: Exactly 3 sharp strategic insights.
   `;
 
   const response = await ai.models.generateContent({
@@ -29,20 +32,37 @@ export async function getBusinessIntelligence(industry: string, description: str
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          narrativeBriefing: { type: Type.STRING },
+          detectedModel: { type: Type.STRING },
+          marketObservations: { 
+            type: Type.ARRAY, 
+            items: { type: Type.STRING },
+            description: "Exactly 3 observations about the market and operational gaps."
+          }
+        },
+        required: ["narrativeBriefing", "detectedModel", "marketObservations"]
+      }
     },
   });
 
   const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
     ?.map((chunk: any) => ({
-      title: chunk.web?.title || 'Market Source',
+      title: chunk.web?.title || 'External Source',
       uri: chunk.web?.uri
     }))
     .filter((c: any) => c.uri) || [];
 
+  const data = JSON.parse(response.text);
+
   return {
-    text: response.text,
+    text: data.narrativeBriefing,
     citations,
-    detectedModel: "High-Velocity Enterprise"
+    detectedModel: data.detectedModel,
+    observations: data.marketObservations
   };
 }
 
@@ -51,13 +71,14 @@ export async function getBusinessIntelligence(industry: string, description: str
  * Generates industry-specific friction points paired with AI solutions.
  * Uses Thinking Mode to reason through industry-specific revenue levers.
  */
-export async function getIndustrySpecificQuestions(industry: string, context: any) {
+export async function getIndustrySpecificQuestions(industry: string, context: any, researchContext: string) {
   const ai = getAI();
   
   const prompt = `
     Generate a bespoke operational diagnostic for ${context.companyName}.
     Industry Context: ${industry}
-    Research Context: ${context.description}
+    Company Background: ${context.description}
+    Researcher Briefing from Step 1: ${researchContext}
 
     REQUIREMENTS:
     - Use Thinking Mode to reason through the primary "Revenue Lever" for this specific business model.
@@ -74,7 +95,7 @@ export async function getIndustrySpecificQuestions(industry: string, context: an
     contents: prompt,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 2048 },
+      thinkingConfig: { thinkingBudget: 4096 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,

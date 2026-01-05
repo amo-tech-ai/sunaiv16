@@ -4,26 +4,29 @@ import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
 
 /**
  * Problem -> System Mapping Validator (Prompt 03)
+ * Architecting a modular engine suite based on Step 2 diagnostics.
  */
 export async function getSystemRecommendations(userData: UserData): Promise<SystemRecommendation[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Architect a modular AI system suite for ${userData.companyName}.
+    contents: `Architect a bespoke modular AI system suite for ${userData.companyName}.
     Industry: ${userData.industry}
-    Primary Friction: ${userData.blocker}
-    Manual Bottleneck: ${userData.manualWork}
-    Strategic Priority: ${userData.priority}
+    Revenue Blocker: ${userData.blocker}
+    Manual Drag: ${userData.manualWork}
+    Velocity Target: ${userData.speed}
+    Executive Priority: ${userData.priority}
 
     TASK:
-    Identify 5 specific AI engines from our library that directly address these leaks.
+    Identify 5 specific AI engines from our library that directly plug the identified revenue leaks.
     
     GUIDELINES:
-    - Descriptions must be concise (max 15 words).
-    - Focus on the business outcome (e.g., "Clears sales backlogs") rather than technology.
-    - Use plain, powerful business language.`,
+    - Focus on the outcome (e.g., "Automated Lead Capture" rather than "chatbot").
+    - Provide a "Why this matters" narrative in editorial consultant tone.
+    - Match systems specifically to the blockers identified in Step 2.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
+      thinkingConfig: { thinkingBudget: 4096 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -32,15 +35,12 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
           properties: {
             id: { type: Type.STRING },
             name: { type: Type.STRING },
-            description: { 
-              type: Type.STRING, 
-              description: "A concise, jargon-free explanation of the business benefit (max 15 words)." 
-            },
-            problem: { type: Type.STRING, description: "The specific operational leak this plugs" },
-            ai_system: { type: Type.STRING, description: "The architectural system name" },
-            business_impact: { type: Type.STRING, description: "The direct revenue or time benefit in one short sentence" },
+            description: { type: Type.STRING, description: "Bespoke system description (max 15 words)." },
+            problem: { type: Type.STRING, description: "The specific operational friction this removes" },
+            ai_system: { type: Type.STRING, description: "Technical engine name" },
+            business_impact: { type: Type.STRING, description: "Direct revenue or time benefit" },
             recommended: { type: Type.BOOLEAN },
-            whyItMatters: { type: Type.STRING }
+            whyItMatters: { type: Type.STRING, description: "Strategic justification for the executive." }
           },
           required: ["id", "name", "description", "problem", "ai_system", "business_impact", "recommended", "whyItMatters"]
         }
@@ -63,15 +63,13 @@ export async function getArchitectureBlueprint(userData: UserData): Promise<stri
     
     RULES:
     - SVG must be valid
-    - Simple boxes and arrows
-    - No technical jargon
-    - Business-friendly naming`,
+    - Minimalist black lines on transparent background
+    - No text-shadows or gradients.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
     }
   });
   
-  // Extract SVG code from the response
   const svgMatch = response.text.match(/<svg[\s\S]*?<\/svg>/i);
   return svgMatch ? svgMatch[0] : '';
 }
@@ -85,7 +83,6 @@ export async function getReadinessAssessment(data: UserData) {
     model: 'gemini-3-pro-preview',
     contents: `Conduct an evidence-based operational audit for ${data.companyName}.
     Selected Systems: ${data.selectedSystems.join(', ')}
-    Context: ${data.description}
     Diagnostics: ${data.blocker}, ${data.manualWork}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
@@ -105,9 +102,8 @@ export async function getReadinessAssessment(data: UserData) {
             required: ["data", "infrastructure", "culture"]
           },
           feedback: { type: Type.STRING },
-          risks: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 Key Risks" },
-          wins: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 Quick Wins" },
-          evidence: { type: Type.STRING, description: "Evidence Notes" },
+          risks: { type: Type.ARRAY, items: { type: Type.STRING } },
+          wins: { type: Type.ARRAY, items: { type: Type.STRING } },
           confidence: {
             type: Type.OBJECT,
             properties: {
@@ -117,7 +113,7 @@ export async function getReadinessAssessment(data: UserData) {
             required: ["level", "reason"]
           }
         },
-        required: ["score", "areaScores", "feedback", "risks", "wins", "evidence", "confidence"]
+        required: ["score", "areaScores", "feedback", "risks", "wins", "confidence"]
       }
     }
   });

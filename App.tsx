@@ -32,7 +32,6 @@ const App: React.FC = () => {
   }, [setIntelligence]);
 
   // Step 1: Initial Research & Grounding
-  // Triggered when significant context is added.
   useEffect(() => {
     const shouldResearch = step === 1 && userData.industry && userData.description.length > 50;
     
@@ -57,11 +56,8 @@ const App: React.FC = () => {
             ...prev,
             status: 'complete',
             notes: res.text,
-            observations: [
-              "Business model footprint verified via search grounding",
-              "Primary revenue leaks identified in current model",
-              "Initial readiness baseline established for " + userData.industry
-            ],
+            detectedModel: res.detectedModel,
+            observations: res.observations,
             citations: res.citations
           }));
         } catch (error) {
@@ -71,7 +67,7 @@ const App: React.FC = () => {
         }
       };
       
-      const timer = setTimeout(research, 1200); // Increased debounce for deliberate feel
+      const timer = setTimeout(research, 1500); 
       return () => clearTimeout(timer);
     }
   }, [step, userData.industry, userData.description, userData.companyName, userData.website, handleError, setIntelligence]);
@@ -85,7 +81,8 @@ const App: React.FC = () => {
           if (!industryContent && userData.industry) {
             handleStreamingNotes(`Connecting your ${userData.industry} challenges to specific strategic solutions. We are identifying the exact friction points in your current revenue funnel.`);
             try {
-              const content = await getIndustrySpecificQuestions(userData.industry, { ...userData });
+              // Pass the narrative brief (intelligence.notes) to ensure S2 is built on S1 findings
+              const content = await getIndustrySpecificQuestions(userData.industry, userData, intelligence.notes);
               setIndustryContent(content);
             } catch (err) {
               handleError(err, 'Step 2 Diagnostics');
@@ -134,7 +131,7 @@ const App: React.FC = () => {
       }
     };
     runStepLogic();
-  }, [step, userData.blocker, userData.manualWork, userData.priority, userData.industry, handleStreamingNotes, handleError, assessment, recommendations.length, industryContent, updateUserData, userData]);
+  }, [step, userData.blocker, userData.manualWork, userData.priority, userData.industry, handleStreamingNotes, handleError, assessment, recommendations.length, industryContent, updateUserData, userData, intelligence.notes]);
 
   // Architecture Blueprint (SVG) Generation Loop
   useEffect(() => {
@@ -203,6 +200,15 @@ const App: React.FC = () => {
       right={
         <div className="space-y-16">
           <div className="min-h-[160px] relative">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></div>
+              <span className="text-xs uppercase tracking-widest text-[#777] font-semibold">Sun Intelligence</span>
+              {intelligence.detectedModel && (
+                <span className="ml-auto text-[9px] uppercase tracking-widest font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-200">
+                  {intelligence.detectedModel}
+                </span>
+              )}
+            </div>
             <div className="text-xl leading-[1.65] text-[#1A1A1A] font-body-serif font-light whitespace-pre-wrap transition-all duration-500">
               {intelligence.notes}
               {intelligence.status === 'analyzing' && (
@@ -213,7 +219,7 @@ const App: React.FC = () => {
 
           {intelligence.citations && intelligence.citations.length > 0 && (
             <div className="space-y-6 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
-              <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Market Grounding</h4>
+              <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Market Sources</h4>
               <div className="space-y-4">
                 {intelligence.citations.map((cite, i) => (
                   <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 text-[11px] text-[#444] hover:text-[#1A1A1A] transition-colors font-medium group">
@@ -225,7 +231,7 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {intelligence.observations.length > 0 && (
+          {intelligence.observations && intelligence.observations.length > 0 && (
             <div className="space-y-10 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
               <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Strategic Brief</h4>
               <ul className="space-y-10">

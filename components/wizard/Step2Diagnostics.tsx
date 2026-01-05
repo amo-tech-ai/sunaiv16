@@ -109,9 +109,9 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
           'speed', 
           'Execution Velocity', 
           "What is the current target for your operational launch cycle?",
-          industryContent?.speedOptions, 
-          industryContent?.speedAIFeatures,
-          industryContent?.speedWhy
+          industryContent?.speedOptions || ["< 24 Hours", "2-3 Days", "1 Week", "2 Weeks+"], 
+          industryContent?.speedAIFeatures || [],
+          industryContent?.speedWhy || "Velocity is the primary indicator of operational drag."
         )}
 
         {renderDiagnosticSection(

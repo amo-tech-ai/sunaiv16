@@ -10,6 +10,10 @@ export async function getRiskAssessment(userData: UserData): Promise<string> {
   const totalCount = userData.tasks?.length || 0;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   
+  // Identify if founder-led tasks are the current bottleneck
+  const pendingClientTasks = userData.tasks?.filter(t => t.owner === 'client' && t.status === 'pending').length || 0;
+  const pendingAITasks = userData.tasks?.filter(t => t.owner === 'ai' && t.status === 'pending').length || 0;
+  
   const ai = getAI();
   
   const prompt = `
@@ -18,16 +22,17 @@ export async function getRiskAssessment(userData: UserData): Promise<string> {
     DATA STATE:
     - Phase: ${userData.roadmap?.[0]?.title}
     - Progress: ${completedCount}/${totalCount} tasks (${Math.round(progressPercent)}%)
+    - Pending Founder Tasks: ${pendingClientTasks}
+    - Pending AI Execution: ${pendingAITasks}
     - Active Architecture: ${userData.selectedSystems.join(', ')}
-    - Core Priority: ${userData.priority}
 
     TASK:
     Generate a 3-sentence narrative for the Executive Command Center.
-    - Sentence 1: Direct assessment of current velocity.
-    - Sentence 2: Identify one "High-Leverage" next step or potential risk area.
-    - Sentence 3: Connect current actions to the long-term ROI of the ${userData.selectedSystems[0]}.
+    - Sentence 1: Analyze current velocity. (e.g., "We are maintaining strong velocity in Phase 1.")
+    - Sentence 2: Identify the primary bottleneck. If Pending Founder Tasks > 0, highlight the need for executive signature.
+    - Sentence 3: Connect actions to the ROI of ${userData.selectedSystems[0]}.
 
-    TONE: Senior Partner. Direct. Sophisticated.
+    TONE: Senior Partner. Editorial. Direct.
   `;
 
   const response = await ai.models.generateContent({
