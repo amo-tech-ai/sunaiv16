@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const CardSkeleton: React.FC = () => (
@@ -6,6 +7,27 @@ export const CardSkeleton: React.FC = () => (
     <div className="h-4 bg-[#EFE9E4] w-full"></div>
     <div className="h-4 bg-[#EFE9E4] w-2/3"></div>
     <div className="h-3 bg-[#EFE9E4] w-1/4 mt-6"></div>
+  </div>
+);
+
+export const DiagnosticSkeleton: React.FC = () => (
+  <div className="space-y-16 animate-pulse">
+    <div className="space-y-4">
+      <div className="h-12 bg-[#EFE9E4] w-2/3"></div>
+      <div className="h-6 bg-[#FAF8F6] w-1/2"></div>
+    </div>
+    <div className="space-y-12">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="space-y-6">
+          <div className="h-4 bg-[#EFE9E4] w-32 border-l-2 border-amber-400 pl-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(j => (
+              <div key={j} className="h-16 bg-white border border-[#EFE9E4]"></div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 );
 

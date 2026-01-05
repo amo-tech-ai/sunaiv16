@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { UserData, IntelligenceState } from '../../types';
+import { DiagnosticSkeleton } from '../ui/SkeletonLoading';
 
 interface StepProps {
   data: UserData;
@@ -13,6 +14,11 @@ interface StepProps {
 
 export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextStep, prevStep, industryContent }) => {
   const isComplete = data.blocker && data.manualWork && data.speed && data.priority;
+  const isLoading = !industryContent;
+
+  if (isLoading) {
+    return <DiagnosticSkeleton />;
+  }
 
   const renderOptionPair = (
     category: 'blocker' | 'manualWork' | 'priority', 
@@ -34,15 +40,21 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
                 className={`w-full text-left p-6 border transition-all text-sm font-medium tracking-wide flex justify-between items-center ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
               >
                 <span>{opt}</span>
-                {isSelected && <span className="text-amber-400">●</span>}
+                {isSelected && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-amber-400">Targeted</span>
+                    <span className="text-amber-400">●</span>
+                  </div>
+                )}
               </button>
               
               {isSelected && solution && (
-                <div className="p-5 bg-amber-50 border-l-2 border-amber-400 animate-fade-enter-active">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-amber-700">Proposed AI Engine Logic</span>
+                <div className="p-6 bg-amber-50 border border-amber-100 animate-fade-enter-active">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                    <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-amber-700">Proposed Engine Intervention</span>
                   </div>
-                  <p className="text-xs text-amber-900 font-body-serif italic leading-relaxed">
+                  <p className="text-sm text-amber-950 font-body-serif italic leading-relaxed">
                     “{solution}”
                   </p>
                 </div>
@@ -102,7 +114,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 pt-8">
+      <div className="flex flex-col md:flex-row gap-4 pt-12">
         <button 
           onClick={prevStep}
           className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
@@ -112,9 +124,9 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         <button 
           disabled={!isComplete}
           onClick={nextStep}
-          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all shadow-xl shadow-amber-900/5 ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          View System Architecture →
+          View Recommended Architecture →
         </button>
       </div>
     </div>

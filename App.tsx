@@ -38,14 +38,20 @@ const App: React.FC = () => {
         }));
         
         try {
-          const res = await getBusinessIntelligence(userData.industry, userData.description, userData.companyName, userData.website);
+          const res = await getBusinessIntelligence(
+            userData.industry, 
+            userData.description, 
+            userData.companyName, 
+            userData.website
+          );
           setIntelligence(prev => ({
             ...prev,
             status: 'complete',
             notes: res.text,
+            detectedModel: res.detectedModel,
             observations: [
               "Competitive landscape verified via Google Search",
-              "Business model logic confirmed",
+              `Business model identified: ${res.detectedModel}`,
               "Identified initial scale bottlenecks"
             ],
             citations: res.citations
@@ -66,8 +72,14 @@ const App: React.FC = () => {
         case 2:
           handleStreamingNotes(`Contextualizing the diagnostic for ${userData.companyName}. Explain why identifying friction in ${userData.industry} is the prerequisite for automation.`);
           if (!industryContent && userData.industry) {
-            // Pass the research notes from step 1 into the industry diagnostic generator
-            const content = await getIndustrySpecificQuestions(userData.industry, intelligence.notes);
+            // Build rich context for the diagnostic generator
+            const diagnosticContext = {
+              researchResults: intelligence.notes,
+              companyName: userData.companyName,
+              description: userData.description,
+              website: userData.website
+            };
+            const content = await getIndustrySpecificQuestions(userData.industry, diagnosticContext as any);
             setIndustryContent(content);
           }
           break;
@@ -144,6 +156,12 @@ const App: React.FC = () => {
           <div className="space-y-1.5">
             <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Sector</span>
             <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.industry}</p>
+          </div>
+        )}
+        {step > 1 && intelligence.detectedModel && (
+          <div className="space-y-1.5">
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Model</span>
+            <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{intelligence.detectedModel}</p>
           </div>
         )}
         {step > 2 && userData.priority && (
