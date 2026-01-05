@@ -1,32 +1,29 @@
-
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 
 /**
- * Conducts deep research on a company using Google Search grounding.
+ * Conducts deep research using Google Search grounding.
+ * Identifies business model, service offerings, and digital friction indicators.
  */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
   const websiteContext = website 
-    ? `Analyze the digital presence and storefront at ${website}. 
-       Identify:
-       - The primary business model (e.g., DTC Fashion, B2B Marketing Agency).
-       - Visible manual friction indicators (e.g., slow product updates, lack of personalization).
-       - Market positioning compared to competitors.` 
-    : `Analyze typical ${industry} bottlenecks for a brand like ${companyName}.`;
+    ? `Analyze the digital storefront and brand presence at ${website}. 
+       Identify visible manual friction like generic lead forms, no live personalization, or manual content updates.` 
+    : `Research typical ${industry} friction points for a business described as: "${description}".`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Help me understand ${companyName} in the ${industry} space. 
+    contents: `Analyze ${companyName} in the ${industry} space. 
     Context: ${description}
     ${websiteContext}
     
     Executive Briefing:
-    1. What is their real business model?
-    2. Where are they likely losing money or time right now? (Identify 3 "money leaks").
-    3. What is the one big growth opportunity they are missing?
+    1. Summarize their business model in one plain sentence.
+    2. Identify 3 specific "money leaks" or "digital friction" indicators.
+    3. Note why they need to move faster in today's market.
     
-    Write a short, friendly summary with zero jargon. Use citations where you found real web data.`,
+    List extracted URLs as citations.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
@@ -48,7 +45,7 @@ export async function getBusinessIntelligence(industry: string, description: str
 }
 
 /**
- * Generates a deeply personalized diagnostic with paired AI solutions.
+ * Generates personalized diagnostic questions with paired benefit-driven AI solutions.
  */
 export async function getIndustrySpecificQuestions(industry: string, context: { 
   researchResults: string, 
@@ -61,13 +58,15 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
     model: 'gemini-3-flash-preview',
     contents: `Based on the research for ${context.companyName}: "${context.researchResults}".
     
-    Create a 4-step diagnostic focused on Sales, Marketing, and Content growth.
+    Create a 4-step diagnostic focused on Sales & Marketing growth.
     
     RULES:
-    - CATEGORIES: "Sales & Marketing Growth", "Online Presence & Content", "Execution Speed", and "Your #1 Priority".
-    - PHRASING: Use plain English business frustrations. E.g., "We struggle to keep up with trends on social media" or "Writing product descriptions takes too long."
-    - AI SOLUTIONS: For EVERY problem option, provide a corresponding AI Fix described as a simple win. E.g., "This handles all your social captions automatically."
-    - NICHING: Use industry-specific terms like "seasonal drops", "SKU velocity", "inventory turnover".`,
+    1. CATEGORY: "Sales & Marketing Growth". Question: "Where are you losing sales right now?"
+    2. CATEGORY: "Online Presence & Content". Options MUST include "AI writes product descriptions," "AI assistant creates social captions," "Influencer outreach automation."
+    3. CATEGORY: "Speed to Market". Options MUST include "Automate new product launch content" and "AI-driven promotion scheduling."
+    4. SOLUTIONS: Every problem option needs a paired "AI Fix" described as a plain-English win. E.g., "This handles your captions automatically" instead of "Content Generation Engine."
+    
+    NICHING: Use "SKU velocity," "seasonal drops," "influencer outreach," and "inventory turnover."`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 2048 },
@@ -85,6 +84,8 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
           contentAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
           contentWhy: { type: Type.STRING },
           speedOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          speedAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+          speedWhy: { type: Type.STRING },
           priorityQuestion: { type: Type.STRING },
           priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
           priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -94,7 +95,7 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
           "dynamicTitle", 
           "salesOptions", "salesAIFeatures", "salesWhy",
           "contentOptions", "contentAIFeatures", "contentWhy",
-          "speedOptions",
+          "speedOptions", "speedAIFeatures", "speedWhy",
           "priorityOptions", "priorityAIFeatures", "priorityWhy"
         ]
       }

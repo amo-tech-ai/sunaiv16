@@ -6,9 +6,11 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Recommend 5 specific AI systems tailored for a company in ${userData.industry} dealing with ${userData.blocker} and ${userData.manualWork}. The executive priority is ${userData.priority}.
+    contents: `Recommend 5 specific AI systems tailored for ${userData.companyName} in the ${userData.industry} sector. 
+    They are blocked by ${userData.blocker} and struggle with ${userData.manualWork}.
+    Their priority is ${userData.priority}.
     
-    If Fashion/Retail, ensure recommendations cover digital storefront optimization, social media marketing automation, and inventory turnover efficiency.`,
+    Each system must include a custom 'whyItMatters' note mapping to their specific friction.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 1024 },
@@ -36,13 +38,12 @@ export async function getReadinessAssessment(data: UserData) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Conduct a Strategic Readiness Assessment for ${data.companyName}.
-    Selected Architecture: ${data.selectedSystems.join(', ')}
-    Context: ${data.description}
-    Priority: ${data.priority}
+    contents: `Detailed Readiness Audit for ${data.companyName}.
+    Selected Systems: ${data.selectedSystems.join(', ')}
+    Industry: ${data.industry}
+    Description: ${data.description}
     
-    Audit Data Maturity, Infrastructure, and Culture. Be direct about structural friction. 
-    For Retail/Fashion, look specifically at inventory data hygiene and social marketing attribution.`,
+    Analyze Data Maturity, Infrastructure, and Culture. Note specific "Scale Ceilings" that will break under automated growth.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -75,13 +76,12 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Design the 90-Day Operational Transformation Roadmap for ${data.companyName}.
-    Systems: ${data.selectedSystems.join(', ')}
-    Immediate Goal: ${data.priority}
-    Audit Feedback: ${data.readinessFeedback}
+    contents: `Final 90-Day Execution Roadmap for ${data.companyName}.
+    Systems to Implement: ${data.selectedSystems.join(', ')}
+    Executive Priority: ${data.priority}
+    Readiness Audit Context: ${data.readinessFeedback}
     
-    Sequence for maximum velocity and immediate team time-buyback. 
-    For Fashion/Retail, prioritize 'Engine Readiness' for social traffic peaks and seasonal collections.`,
+    Sequence for maximum ROI. Phase 1 must focus on "Time Reclaiming" (fixing the messy foundation).`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },

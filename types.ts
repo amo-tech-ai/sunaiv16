@@ -1,4 +1,3 @@
-
 export interface UserData {
   fullName: string;
   companyName: string;
@@ -65,6 +64,8 @@ export interface DiagnosticQuestionSet {
   contentAIFeatures: string[];
   contentWhy: string;
   speedOptions: string[];
+  speedAIFeatures: string[];
+  speedWhy: string;
   priorityQuestion: string;
   priorityOptions: string[];
   priorityAIFeatures: string[];
