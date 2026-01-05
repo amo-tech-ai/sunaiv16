@@ -2,28 +2,20 @@ import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 
 /**
- * Conducts deep research using Google Search grounding.
- * Identifies business model, service offerings, and digital friction indicators.
+ * Screen 1 Research (Grounding)
  */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
-  const websiteContext = website 
-    ? `Analyze the digital storefront and brand presence at ${website}. 
-       Identify visible manual friction like generic lead forms, no live personalization, or manual content updates.` 
-    : `Research typical ${industry} friction points for a business described as: "${description}".`;
-  
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Analyze ${companyName} in the ${industry} space. 
     Context: ${description}
-    ${websiteContext}
+    Website: ${website || "N/A"}
     
     Executive Briefing:
-    1. Summarize their business model in one plain sentence.
-    2. Identify 3 specific "money leaks" or "digital friction" indicators.
-    3. Note why they need to move faster in today's market.
-    
-    List extracted URLs as citations.`,
+    - Business model summary (plain English)
+    - 3 specific revenue leaks or speed bottlenecks
+    - Growth readiness notes`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
@@ -32,7 +24,7 @@ export async function getBusinessIntelligence(industry: string, description: str
 
   const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
     ?.map((chunk: any) => ({
-      title: chunk.web?.title || 'Market Source',
+      title: chunk.web?.title || 'Source',
       uri: chunk.web?.uri
     }))
     .filter((c: any) => c.uri) || [];
@@ -40,15 +32,14 @@ export async function getBusinessIntelligence(industry: string, description: str
   return {
     text: response.text,
     citations,
-    detectedModel: response.text.match(/Business Model:?\s*([^\n\.]+)/i)?.[1]?.trim() || "Growth-Focused Brand"
+    detectedModel: "Strategy Partner"
   };
 }
 
 /**
- * Generates personalized diagnostic questions with paired benefit-driven AI solutions.
+ * Industry Diagnostic Generator (Prompt 02)
  */
 export async function getIndustrySpecificQuestions(industry: string, context: { 
-  researchResults: string, 
   companyName: string, 
   description: string,
   website?: string 
@@ -56,25 +47,21 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Based on the research for ${context.companyName}: "${context.researchResults}".
-    
-    Create a 4-step diagnostic focused on Sales & Marketing growth.
+    contents: `Generate industry-specific diagnostics for ${context.companyName} in the ${industry} sector.
+    Context: ${context.description}
     
     RULES:
-    1. CATEGORY: "Sales & Marketing Growth". Question: "Where are you losing sales right now?"
-    2. CATEGORY: "Online Presence & Content". Options MUST include "AI writes product descriptions," "AI assistant creates social captions," "Influencer outreach automation."
-    3. CATEGORY: "Speed to Market". Options MUST include "Automate new product launch content" and "AI-driven promotion scheduling."
-    4. SOLUTIONS: Every problem option needs a paired "AI Fix" described as a plain-English win. E.g., "This handles your captions automatically" instead of "Content Generation Engine."
-    
-    NICHING: Use "SKU velocity," "seasonal drops," "influencer outreach," and "inventory turnover."`,
+    - Every question must be specific to ${industry}
+    - Every option must reflect how this industry makes money
+    - Focus on sales and marketing outcomes
+    - No generic options`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 2048 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          dynamicTitle: { type: Type.STRING },
+          dynamicTitle: { type: Type.STRING, description: "Industry-specific title" },
           salesQuestion: { type: Type.STRING },
           salesOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
           salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -92,11 +79,10 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
           priorityWhy: { type: Type.STRING }
         },
         required: [
-          "dynamicTitle", 
-          "salesOptions", "salesAIFeatures", "salesWhy",
-          "contentOptions", "contentAIFeatures", "contentWhy",
+          "dynamicTitle", "salesQuestion", "salesOptions", "salesAIFeatures", "salesWhy",
+          "contentQuestion", "contentOptions", "contentAIFeatures", "contentWhy",
           "speedOptions", "speedAIFeatures", "speedWhy",
-          "priorityOptions", "priorityAIFeatures", "priorityWhy"
+          "priorityQuestion", "priorityOptions", "priorityAIFeatures", "priorityWhy"
         ]
       }
     }

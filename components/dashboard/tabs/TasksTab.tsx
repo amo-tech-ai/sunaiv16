@@ -11,9 +11,10 @@ export const TasksTab: React.FC<TabProps> = ({ userData, updateTasks }) => {
   const [filter, setFilter] = useState<'All' | 'Client' | 'Sun AI'>('All');
   const tasks = userData.tasks || [];
 
+  // Fix: Correctly map filter labels to owner types ('client' or 'ai')
   const filteredTasks = filter === 'All' 
     ? tasks 
-    : tasks.filter(t => t.owner === filter || (filter === 'Sun AI' && t.owner === 'Automated'));
+    : tasks.filter(t => (filter === 'Client' && t.owner === 'client') || (filter === 'Sun AI' && t.owner === 'ai'));
 
   const toggleTask = (id: string) => {
     const newTasks = tasks.map(t => 
@@ -72,10 +73,11 @@ export const TasksTab: React.FC<TabProps> = ({ userData, updateTasks }) => {
               
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-2">
+                  {/* Fix: use lowercase 'client' to match DashboardTask owner type */}
                   <span className={`text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 border ${
-                    task.owner === 'Client' ? 'border-amber-200 text-amber-700 bg-amber-50' : 'border-gray-200 text-gray-400 bg-gray-50'
+                    task.owner === 'client' ? 'border-amber-200 text-amber-700 bg-amber-50' : 'border-gray-200 text-gray-400 bg-gray-50'
                   }`}>
-                    {task.owner === 'Client' ? 'Executive Signature' : 'Sun AI Execution'}
+                    {task.owner === 'client' ? 'Executive Signature' : 'Sun AI Execution'}
                   </span>
                   <span className="text-[9px] text-[#CCC] uppercase tracking-widest font-bold">Phase 0{task.phaseIdx + 1}</span>
                 </div>

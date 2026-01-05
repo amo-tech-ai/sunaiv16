@@ -1,27 +1,44 @@
-// Declare Deno and process globals, update Gemini API import and initialization to follow strict coding guidelines.
+// Assess Readiness - Step 4 Audit
 declare const Deno: any;
-declare const process: any;
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { validateUser, getAdminClient, corsHeaders } from "../_shared/supabase.ts";
+import { validateUser, getAdminClient, corsHeaders, checkRateLimit, createErrorResponse } from "../_shared/supabase.ts";
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+/**
+ * Audits operational readiness and creates versioned snapshots.
+ */
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
 
   try {
     const { org_id, project_id, wizard_data } = await req.json();
-    await validateUser(req, org_id);
+    if (!org_id || !project_id || !wizard_data) throw new Error("Missing required fields");
 
-    // Initialize Gemini with the required process.env.API_KEY variable
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    await validateUser(req, org_id);
+    await checkRateLimit(org_id);
+
+    const admin = getAdminClient();
     
+    // 1. Verify Project
+    const { data: project, error: pErr } = await admin.from("projects").select("id").eq("id", project_id).eq("org_id", org_id).single();
+    if (pErr || !project) throw new Error("Project not found");
+
+    // 2. Determine Snapshot Version
+    const { data: latestSnapshot } = await admin
+      .from("context_snapshots")
+      .select("version")
+      .eq("project_id", project_id)
+      .order("version", { ascending: false })
+      .limit(1)
+      .single();
+    
+    const nextVersion = (latestSnapshot?.version || 0) + 1;
+
+    // 3. AI Audit
+    const ai = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_API_KEY") });
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `Conduct a Strategic Readiness Audit for ${wizard_data.companyName}.
-      Context: ${JSON.stringify(wizard_data)}
-      
-      Evaluate Data Maturity, Technical Infrastructure, and Organizational Culture. 
-      Identify critical gaps that will prevent scaling.`,
+      contents: `Conduct audit for ${wizard_data.companyName}: ${JSON.stringify(wizard_data)}`,
       config: {
         thinkingConfig: { thinkingBudget: 4096 },
         responseMimeType: "application/json",
@@ -31,11 +48,7 @@ Deno.serve(async (req) => {
             score: { type: Type.NUMBER },
             areaScores: {
               type: Type.OBJECT,
-              properties: {
-                data: { type: Type.NUMBER },
-                infrastructure: { type: Type.NUMBER },
-                culture: { type: Type.NUMBER }
-              },
+              properties: { data: { type: Type.NUMBER }, infrastructure: { type: Type.NUMBER }, culture: { type: Type.NUMBER } },
               required: ["data", "infrastructure", "culture"]
             },
             feedback: { type: Type.STRING },
@@ -43,27 +56,34 @@ Deno.serve(async (req) => {
           },
           required: ["score", "areaScores", "feedback", "criticalGaps"]
         }
-      },
+      }
     });
 
-    const result = JSON.parse(response.text);
+    let result;
+    try {
+      result = JSON.parse(response.text);
+    } catch {
+      throw new Error("AI output was invalid JSON");
+    }
 
-    const admin = getAdminClient();
-    await admin.from("context_snapshots").insert({
+    // 4. Atomic Snapshot Update (Versioning)
+    await admin.from("context_snapshots").update({ is_active: false }).eq("project_id", project_id);
+    
+    const { error: insErr } = await admin.from("context_snapshots").insert({
       org_id,
       project_id,
+      version: nextVersion,
       summary: result.feedback,
       metrics: result.areaScores,
       is_active: true
     });
+    if (insErr) throw new Error("Failed to save snapshot");
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return createErrorResponse(error);
   }
 });

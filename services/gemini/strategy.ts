@@ -2,18 +2,19 @@ import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
 
+/**
+ * Problem -> System Mapping Validator (Prompt 03)
+ */
 export async function getSystemRecommendations(userData: UserData): Promise<SystemRecommendation[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Recommend 5 specific AI systems tailored for ${userData.companyName} in the ${userData.industry} sector. 
-    They are blocked by ${userData.blocker} and struggle with ${userData.manualWork}.
-    Their priority is ${userData.priority}.
-    
-    Each system must include a custom 'whyItMatters' note mapping to their specific friction.`,
+    model: 'gemini-3-pro-preview',
+    contents: `Validate business logic and map problems to systems.
+    Industry: ${userData.industry}
+    Problems: ${userData.blocker}, ${userData.manualWork}
+    Priority: ${userData.priority}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 1024 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -23,10 +24,13 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
             id: { type: Type.STRING },
             name: { type: Type.STRING },
             description: { type: Type.STRING },
-            whyItMatters: { type: Type.STRING },
-            recommended: { type: Type.BOOLEAN }
+            problem: { type: Type.STRING, description: "The specific problem this addresses" },
+            ai_system: { type: Type.STRING, description: "The system name" },
+            business_impact: { type: Type.STRING, description: "How it helps sales or marketing in one sentence" },
+            recommended: { type: Type.BOOLEAN },
+            whyItMatters: { type: Type.STRING }
           },
-          required: ["id", "name", "description", "whyItMatters", "recommended"]
+          required: ["id", "name", "description", "problem", "ai_system", "business_impact", "recommended", "whyItMatters"]
         }
       }
     }
@@ -34,16 +38,43 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
   return JSON.parse(response.text);
 }
 
+/**
+ * Architecture Blueprint SVG Generator (Prompt 04)
+ */
+export async function getArchitectureBlueprint(userData: UserData): Promise<string> {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Generate a SIMPLE SVG diagram showing data flow between selected AI systems and business tools.
+    Systems: ${userData.selectedSystems.join(', ')}
+    Tools: Website, CRM, Email, Social Media.
+    
+    RULES:
+    - SVG must be valid
+    - Simple boxes and arrows
+    - No technical jargon
+    - Business-friendly naming`,
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
+    }
+  });
+  
+  // Extract SVG code from the response
+  const svgMatch = response.text.match(/<svg[\s\S]*?<\/svg>/i);
+  return svgMatch ? svgMatch[0] : '';
+}
+
+/**
+ * Evidence-Based Readiness Audit (Prompt 05 + Prompt 08)
+ */
 export async function getReadinessAssessment(data: UserData) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Detailed Readiness Audit for ${data.companyName}.
+    contents: `Conduct an evidence-based operational audit for ${data.companyName}.
     Selected Systems: ${data.selectedSystems.join(', ')}
-    Industry: ${data.industry}
-    Description: ${data.description}
-    
-    Analyze Data Maturity, Infrastructure, and Culture. Note specific "Scale Ceilings" that will break under automated growth.`,
+    Context: ${data.description}
+    Diagnostics: ${data.blocker}, ${data.manualWork}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -62,10 +93,19 @@ export async function getReadinessAssessment(data: UserData) {
             required: ["data", "infrastructure", "culture"]
           },
           feedback: { type: Type.STRING },
-          consultantNote: { type: Type.STRING },
-          criticalGaps: { type: Type.ARRAY, items: { type: Type.STRING } }
+          risks: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 Key Risks" },
+          wins: { type: Type.ARRAY, items: { type: Type.STRING }, description: "3 Quick Wins" },
+          evidence: { type: Type.STRING, description: "Evidence Notes" },
+          confidence: {
+            type: Type.OBJECT,
+            properties: {
+              level: { type: Type.STRING, enum: ['High', 'Medium', 'Low'] },
+              reason: { type: Type.STRING }
+            },
+            required: ["level", "reason"]
+          }
         },
-        required: ["score", "areaScores", "feedback", "consultantNote", "criticalGaps"]
+        required: ["score", "areaScores", "feedback", "risks", "wins", "evidence", "confidence"]
       }
     }
   });
@@ -76,12 +116,9 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Final 90-Day Execution Roadmap for ${data.companyName}.
-    Systems to Implement: ${data.selectedSystems.join(', ')}
-    Executive Priority: ${data.priority}
-    Readiness Audit Context: ${data.readinessFeedback}
-    
-    Sequence for maximum ROI. Phase 1 must focus on "Time Reclaiming" (fixing the messy foundation).`,
+    contents: `Generate a 90-day plan for ${data.companyName}.
+    Priority: ${data.priority}
+    Systems: ${data.selectedSystems.join(', ')}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },

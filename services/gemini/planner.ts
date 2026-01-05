@@ -1,19 +1,19 @@
-
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 import { UserData, DashboardTask } from "../../types";
 
+/**
+ * Task Decomposition (Prompt 07)
+ */
 export async function generateTasksFromRoadmap(userData: UserData): Promise<DashboardTask[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Decompose the 90-day roadmap for ${userData.companyName} into a set of 12-15 specific actionable tasks.
-    
+    contents: `Turn strategy into action for ${userData.companyName}.
     Roadmap: ${JSON.stringify(userData.roadmap)}
     Systems: ${userData.selectedSystems.join(', ')}
-    Priority: ${userData.priority}
     
-    Each task MUST have an owner (Client, Sun AI, or Automated) and a one-line 'impact' statement describing the business value.`,
+    Generate realistic tasks that improve sales, marketing, or revenue speed.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
@@ -23,13 +23,14 @@ export async function generateTasksFromRoadmap(userData: UserData): Promise<Dash
           type: Type.OBJECT,
           properties: {
             id: { type: Type.STRING },
-            title: { type: Type.STRING },
-            owner: { type: Type.STRING, enum: ['Client', 'Sun AI', 'Automated'] },
+            title: { type: Type.STRING, description: "Clear action" },
+            owner: { type: Type.STRING, enum: ['client', 'ai'], description: "Who does it" },
+            effort: { type: Type.STRING, enum: ['low', 'medium', 'high'] },
             status: { type: Type.STRING, enum: ['pending'] },
             impact: { type: Type.STRING },
             phaseIdx: { type: Type.NUMBER }
           },
-          required: ["id", "title", "owner", "status", "impact", "phaseIdx"]
+          required: ["id", "title", "owner", "effort", "status", "impact", "phaseIdx"]
         }
       }
     }

@@ -74,7 +74,8 @@ export const OverviewTab: React.FC<TabProps> = ({ userData }) => {
           <div className="flex-1 h-px bg-[#EFE9E4]"></div>
         </h3>
         <div className="grid grid-cols-1 gap-4">
-          {userData.tasks?.filter(t => t.owner === 'Client' && t.status === 'pending').slice(0, 3).map((task, i) => (
+          {/* Fix: use lowercase 'client' to match DashboardTask owner type */}
+          {userData.tasks?.filter(t => t.owner === 'client' && t.status === 'pending').slice(0, 3).map((task, i) => (
             <div key={i} className="p-6 border border-[#EFE9E4] bg-[#FAF8F6] flex justify-between items-center group hover:border-[#1A1A1A] transition-all">
               <div className="space-y-1">
                 <span className="text-[8px] uppercase tracking-widest font-bold text-amber-700 bg-amber-50 px-2 py-0.5 border border-amber-100">Owner: Founder</span>
@@ -83,7 +84,8 @@ export const OverviewTab: React.FC<TabProps> = ({ userData }) => {
               <span className="text-xs text-[#AAA] font-body-serif italic">{task.impact}</span>
             </div>
           ))}
-          {(!userData.tasks || userData.tasks.filter(t => t.owner === 'Client' && t.status === 'pending').length === 0) && (
+          {/* Fix: use lowercase 'client' to match DashboardTask owner type */}
+          {(!userData.tasks || userData.tasks.filter(t => t.owner === 'client' && t.status === 'pending').length === 0) && (
             <p className="text-sm text-[#999] italic text-center py-8 border border-dashed border-[#EFE9E4]">All executive focus items are currently clear.</p>
           )}
         </div>

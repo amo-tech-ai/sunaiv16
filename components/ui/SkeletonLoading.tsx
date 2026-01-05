@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const CardSkeleton: React.FC = () => (
@@ -32,19 +31,24 @@ export const DiagnosticSkeleton: React.FC = () => (
 );
 
 export const RoadmapSkeleton: React.FC = () => (
-  <div className="py-24 text-center space-y-8">
+  <div className="py-24 text-center space-y-8 animate-fade-enter-active">
     <div className="flex justify-center gap-2">
-      <div className="w-2 h-2 bg-[#1A1A1A] rounded-full animate-bounce"></div>
-      <div className="w-2 h-2 bg-[#1A1A1A] rounded-full animate-bounce [animation-delay:0.2s]"></div>
-      <div className="w-2 h-2 bg-[#1A1A1A] rounded-full animate-bounce [animation-delay:0.4s]"></div>
+      <div className="w-2.5 h-2.5 bg-[#1A1A1A] rounded-full animate-bounce"></div>
+      <div className="w-2.5 h-2.5 bg-[#1A1A1A] rounded-full animate-bounce [animation-delay:0.2s]"></div>
+      <div className="w-2.5 h-2.5 bg-[#1A1A1A] rounded-full animate-bounce [animation-delay:0.4s]"></div>
     </div>
-    <p className="text-sm uppercase tracking-[0.3em] font-bold text-[#AAA]">Architecting Strategic Sequencing...</p>
+    <p className="text-[11px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Architecting Strategic Sequence...</p>
   </div>
 );
 
 export const ReadinessSkeleton: React.FC = () => (
-  <div className="py-24 space-y-8 text-center">
-    <div className="w-24 h-24 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-    <p className="text-sm uppercase tracking-[0.3em] font-bold text-[#AAA]">Synthesizing Operational Audit...</p>
+  <div className="py-24 space-y-10 text-center animate-fade-enter-active">
+    <div className="relative inline-block">
+      <div className="w-24 h-24 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-12 h-12 border border-[#EFE9E4] rounded-full animate-pulse"></div>
+      </div>
+    </div>
+    <p className="text-[11px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Synthesizing Operational Audit...</p>
   </div>
 );

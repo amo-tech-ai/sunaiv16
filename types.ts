@@ -13,6 +13,11 @@ export interface UserData {
   readinessFeedback?: string;
   roadmap?: RoadmapPhase[];
   tasks?: DashboardTask[];
+  svgArchitecture?: string;
+  confidence?: {
+    level: 'High' | 'Medium' | 'Low';
+    reason: string;
+  };
   readinessAreas?: {
     data: number;
     infrastructure: number;
@@ -29,7 +34,8 @@ export interface RoadmapPhase {
 export interface DashboardTask {
   id: string;
   title: string;
-  owner: 'Client' | 'Sun AI' | 'Automated';
+  owner: 'client' | 'ai';
+  effort: 'low' | 'medium' | 'high';
   status: 'pending' | 'in-progress' | 'completed';
   impact: string;
   phaseIdx: number;
@@ -51,6 +57,9 @@ export interface SystemRecommendation {
   description: string;
   whyItMatters: string;
   recommended: boolean;
+  problem: string;
+  ai_system: string;
+  business_impact: string;
 }
 
 export interface DiagnosticQuestionSet {

@@ -1,19 +1,25 @@
-// Declare Deno and process globals, update Gemini API import and initialization to follow strict coding guidelines.
+// Intelligence Stream - Dashboard
 declare const Deno: any;
-declare const process: any;
 
 import { GoogleGenAI } from "@google/genai";
-import { validateUser, corsHeaders } from "../_shared/supabase.ts";
+import { validateUser, corsHeaders, createErrorResponse } from "../_shared/supabase.ts";
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+/**
+ * Streams narrative with robust error handling.
+ */
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
 
   try {
     const { org_id, prompt } = await req.json();
+    if (!org_id || !prompt) throw new Error("Missing required fields");
+    
     await validateUser(req, org_id);
 
-    // Initialize Gemini with the required process.env.API_KEY variable
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    if (!apiKey) throw new Error("Internal Server Error: AI Key missing");
+    
+    const ai = new GoogleGenAI({ apiKey });
     
     const responseStream = await ai.models.generateContentStream({
       model: "gemini-3-flash-preview",
@@ -26,13 +32,16 @@ Deno.serve(async (req) => {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of responseStream) {
-          const text = chunk.text;
-          if (text) {
-            controller.enqueue(encoder.encode(text));
+        try {
+          for await (const chunk of responseStream) {
+            const text = chunk.text;
+            if (text) controller.enqueue(encoder.encode(text));
           }
+          controller.close();
+        } catch (streamErr) {
+          console.error("Streaming interrupted:", streamErr);
+          controller.error(streamErr);
         }
-        controller.close();
       },
     });
 
@@ -44,9 +53,6 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return createErrorResponse(error);
   }
 });

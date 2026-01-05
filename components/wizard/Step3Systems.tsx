@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UserData, SystemRecommendation } from '../../types';
 import { CardSkeleton } from '../ui/SkeletonLoading';
@@ -15,9 +14,9 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
   const toggleSystem = (name: string) => {
     const current = data.selectedSystems;
     if (current.includes(name)) {
-      updateData({ selectedSystems: current.filter(s => s !== name) });
+      updateData({ selectedSystems: current.filter(s => s !== name), svgArchitecture: undefined });
     } else if (current.length < 3) {
-      updateData({ selectedSystems: [...current, name] });
+      updateData({ selectedSystems: [...current, name], svgArchitecture: undefined });
     }
   };
 
@@ -40,32 +39,51 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
               onClick={() => toggleSystem(s.name)}
               className={`text-left p-8 border transition-all relative group ${data.selectedSystems.includes(s.name) ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'bg-white border-[#EFE9E4] hover:border-[#D1C7BD]'}`}
             >
-              {s.recommended && !data.selectedSystems.includes(s.name) && (
-                <span className="absolute top-4 right-8 text-[9px] uppercase tracking-[0.2em] text-amber-600 font-bold bg-amber-50 px-3 py-1 border border-amber-200">Selected Path</span>
-              )}
               <h3 className="text-2xl font-serif mb-4">{s.name}</h3>
               <p className={`text-sm leading-relaxed mb-4 ${data.selectedSystems.includes(s.name) ? 'text-gray-300' : 'text-[#777]'}`}>{s.description}</p>
-              <div className={`text-[11px] font-bold uppercase tracking-widest ${data.selectedSystems.includes(s.name) ? 'text-amber-400' : 'text-amber-600'}`}>
-                Impact: {s.whyItMatters}
+              
+              <div className="space-y-2">
+                <div className={`text-[11px] font-bold uppercase tracking-widest ${data.selectedSystems.includes(s.name) ? 'text-amber-400' : 'text-amber-600'}`}>
+                  Impact: {s.business_impact}
+                </div>
+                <div className={`text-[10px] uppercase tracking-widest ${data.selectedSystems.includes(s.name) ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Solving: {s.problem}
+                </div>
               </div>
             </button>
           ))
         )}
       </div>
 
+      {data.selectedSystems.length > 0 && (
+        <div className="space-y-6 pt-12 border-t border-[#EFE9E4]">
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Architecture Blueprint</h2>
+          <div className="bg-[#FAF8F6] p-8 border border-[#EFE9E4] flex justify-center overflow-hidden">
+            {data.svgArchitecture ? (
+              <div dangerouslySetInnerHTML={{ __html: data.svgArchitecture }} className="w-full h-auto" />
+            ) : (
+              <div className="animate-pulse flex flex-col items-center space-y-4 py-12">
+                <div className="w-12 h-12 rounded-full border-2 border-amber-400 border-t-transparent animate-spin"></div>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-[#AAA]">Generating Blueprint...</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row gap-4 pt-8">
         <button 
           onClick={prevStep}
           className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
         >
-          ← Back to Diagnostics
+          ← Adjust Diagnostics
         </button>
         <button 
           disabled={data.selectedSystems.length === 0 || isLoading}
           onClick={nextStep}
           className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${data.selectedSystems.length > 0 && !isLoading ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          Can you scale this? →
+          Check Readiness →
         </button>
       </div>
     </div>
