@@ -6,11 +6,12 @@ interface StepProps {
   data: UserData;
   updateData: (data: Partial<UserData>) => void;
   nextStep: () => void;
+  prevStep: () => void;
   intelligence: IntelligenceState;
   industryContent: any;
 }
 
-export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextStep, industryContent }) => {
+export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextStep, prevStep, industryContent }) => {
   const isComplete = data.blocker && data.manualWork && data.speed && data.priority;
 
   return (
@@ -88,13 +89,21 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         </section>
       </div>
 
-      <button 
-        disabled={!isComplete}
-        onClick={nextStep}
-        className={`w-full py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
-      >
-        Design the Growth Engine →
-      </button>
+      <div className="flex flex-col md:flex-row gap-4 pt-8">
+        <button 
+          onClick={prevStep}
+          className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+        >
+          ← Back to Context
+        </button>
+        <button 
+          disabled={!isComplete}
+          onClick={nextStep}
+          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+        >
+          Design the Growth Engine →
+        </button>
+      </div>
     </div>
   );
 };

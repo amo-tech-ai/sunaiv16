@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { UserData } from '../types';
 
@@ -35,6 +36,7 @@ export function useWizard() {
   };
 
   const nextStep = () => setStep(prev => prev + 1);
+  const prevStep = () => setStep(prev => Math.max(1, prev - 1));
 
   const resetWizard = () => {
     localStorage.removeItem(STORAGE_KEY + '_data');
@@ -48,6 +50,7 @@ export function useWizard() {
     userData,
     updateUserData,
     nextStep,
+    prevStep,
     resetWizard
   };
 }

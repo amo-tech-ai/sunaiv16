@@ -7,10 +7,11 @@ interface StepProps {
   data: UserData;
   updateData: (data: Partial<UserData>) => void;
   nextStep: () => void;
+  prevStep: () => void;
   recommendations: SystemRecommendation[];
 }
 
-export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, recommendations }) => {
+export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, prevStep, recommendations }) => {
   const toggleSystem = (name: string) => {
     const current = data.selectedSystems;
     if (current.includes(name)) {
@@ -52,13 +53,21 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
         )}
       </div>
 
-      <button 
-        disabled={data.selectedSystems.length === 0 || isLoading}
-        onClick={nextStep}
-        className={`w-full py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${data.selectedSystems.length > 0 && !isLoading ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
-      >
-        Can you scale this? →
-      </button>
+      <div className="flex flex-col md:flex-row gap-4 pt-8">
+        <button 
+          onClick={prevStep}
+          className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+        >
+          ← Back to Diagnostics
+        </button>
+        <button 
+          disabled={data.selectedSystems.length === 0 || isLoading}
+          onClick={nextStep}
+          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${data.selectedSystems.length > 0 && !isLoading ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+        >
+          Can you scale this? →
+        </button>
+      </div>
     </div>
   );
 };

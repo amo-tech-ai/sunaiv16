@@ -7,10 +7,11 @@ import { ReadinessSkeleton } from '../ui/SkeletonLoading';
 interface StepProps {
   data: UserData;
   nextStep: () => void;
+  prevStep: () => void;
   assessment: any;
 }
 
-export const Step4Readiness: React.FC<StepProps> = ({ data, nextStep, assessment }) => {
+export const Step4Readiness: React.FC<StepProps> = ({ data, nextStep, prevStep, assessment }) => {
   const isLoading = !assessment;
 
   return (
@@ -92,12 +93,20 @@ export const Step4Readiness: React.FC<StepProps> = ({ data, nextStep, assessment
             )}
           </div>
 
-          <button 
-            onClick={nextStep}
-            className="w-full mt-12 py-6 text-sm uppercase tracking-[0.3em] font-bold bg-[#1A1A1A] text-white hover:bg-[#333] transition-all shadow-xl shadow-amber-900/10"
-          >
-            Create the 90-Day Plan →
-          </button>
+          <div className="flex flex-col md:flex-row gap-4 pt-12">
+            <button 
+              onClick={prevStep}
+              className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+            >
+              ← Back to Architecture
+            </button>
+            <button 
+              onClick={nextStep}
+              className="flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold bg-[#1A1A1A] text-white hover:bg-[#333] transition-all shadow-xl shadow-amber-900/10"
+            >
+              Create the 90-Day Plan →
+            </button>
+          </div>
         </>
       )}
     </div>

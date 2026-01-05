@@ -5,10 +5,11 @@ import { RoadmapSkeleton } from '../ui/SkeletonLoading';
 
 interface StepProps {
   data: UserData;
+  prevStep: () => void;
   onLaunch: () => void;
 }
 
-export const Step5Roadmap: React.FC<StepProps> = ({ data, onLaunch }) => {
+export const Step5Roadmap: React.FC<StepProps> = ({ data, prevStep, onLaunch }) => {
   const isLoading = !data.roadmap;
 
   return (
@@ -48,12 +49,20 @@ export const Step5Roadmap: React.FC<StepProps> = ({ data, onLaunch }) => {
             <p className="text-sm text-[#888] font-body-serif italic max-w-md text-center">
               “This plan clears the clutter first, so you can scale without breaking your culture.”
             </p>
-             <button 
-              onClick={onLaunch}
-              className="w-full py-6 text-sm uppercase tracking-[0.4em] font-bold bg-[#1A1A1A] text-white hover:bg-[#333] transition-all shadow-xl shadow-amber-900/10"
-            >
-              Open Your Hub
-            </button>
+            <div className="flex flex-col md:flex-row gap-4 w-full">
+              <button 
+                onClick={prevStep}
+                className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+              >
+                ← Edit Readiness
+              </button>
+              <button 
+                onClick={onLaunch}
+                className="flex-[2] py-6 text-sm uppercase tracking-[0.4em] font-bold bg-[#1A1A1A] text-white hover:bg-[#333] transition-all shadow-xl shadow-amber-900/10"
+              >
+                Open Your Hub
+              </button>
+            </div>
           </div>
         </div>
       )}

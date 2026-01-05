@@ -14,7 +14,7 @@ import { getBusinessIntelligence, getIndustrySpecificQuestions } from './service
 import { getReadinessAssessment, getRoadmap, getSystemRecommendations } from './services/gemini/strategy';
 
 const App: React.FC = () => {
-  const { step, setStep, userData, updateUserData, nextStep, resetWizard } = useWizard();
+  const { step, setStep, userData, updateUserData, nextStep, prevStep, resetWizard } = useWizard();
   const { intelligence, setIntelligence, handleStreamingNotes } = useIntelligence();
 
   const [industryContent, setIndustryContent] = useState<any>(null);
@@ -114,13 +114,22 @@ const App: React.FC = () => {
 
   const renderLeft = () => (
     <div className="space-y-10">
-      <div>
-        <div className="flex justify-between text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA] mb-3">
+      <div className="space-y-4">
+        <div className="flex justify-between text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">
           <span>Strategic Alignment</span>
           <span>{Math.round((step / 5) * 100)}%</span>
         </div>
-        <div className="h-0.5 bg-[#EFE9E4] w-full">
-          <div className="h-full bg-[#1A1A1A] transition-all duration-700 ease-out" style={{ width: `${(step / 5) * 100}%` }}></div>
+        <div className="grid grid-cols-5 gap-1.5 h-1">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <button
+              key={s}
+              disabled={s > step}
+              onClick={() => setStep(s)}
+              className={`h-full transition-all duration-500 ${
+                s <= step ? 'bg-[#1A1A1A]' : 'bg-[#EFE9E4]'
+              } ${s < step ? 'cursor-pointer hover:bg-amber-400' : ''}`}
+            />
+          ))}
         </div>
       </div>
       <div className="space-y-8 pt-8 border-t border-[#EFE9E4]">
@@ -199,10 +208,10 @@ const App: React.FC = () => {
       center={
         <div className="transition-all duration-700 ease-in-out">
           {step === 1 && <Step1Context data={userData} updateData={updateUserData} nextStep={nextStep} intelligence={intelligence} />}
-          {step === 2 && <Step2Diagnostics data={userData} updateData={updateUserData} nextStep={nextStep} intelligence={intelligence} industryContent={industryContent} />}
-          {step === 3 && <Step3Systems data={userData} updateData={updateUserData} nextStep={nextStep} recommendations={recommendations} />}
-          {step === 4 && <Step4Readiness data={userData} nextStep={nextStep} assessment={assessment} />}
-          {step === 5 && <Step5Roadmap data={userData} onLaunch={() => setStep(6)} />}
+          {step === 2 && <Step2Diagnostics data={userData} updateData={updateUserData} nextStep={nextStep} prevStep={prevStep} intelligence={intelligence} industryContent={industryContent} />}
+          {step === 3 && <Step3Systems data={userData} updateData={updateUserData} nextStep={nextStep} prevStep={prevStep} recommendations={recommendations} />}
+          {step === 4 && <Step4Readiness data={userData} nextStep={nextStep} prevStep={prevStep} assessment={assessment} />}
+          {step === 5 && <Step5Roadmap data={userData} prevStep={prevStep} onLaunch={() => setStep(6)} />}
         </div>
       }
       right={renderRight()}
