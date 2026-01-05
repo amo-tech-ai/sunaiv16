@@ -1,52 +1,50 @@
-# Sun AI Agency — Supabase Architecture & Persistence Strategy
+# Sun AI Agency — Production Supabase Strategy (v2.1)
 
-This document defines the production-grade data architecture for Sun AI Agency. It transitions the platform from a local-state wizard to a multi-tenant, AI-orchestrated SaaS platform.
+This document defines the final, production-ready data architecture for the Sun AI Agency platform. It is designed for multi-tenant isolation, secure AI orchestration, and strategic auditability.
 
 ---
 
 ## 1. System Overview
 
-Supabase serves as the backend backbone, providing identity, persistence, and secure compute for AI agents.
+Supabase serves as the secure foundation for the platform.
 
-### Core Architectural Pillars
-- **Identity & Access:** Multi-tenant isolation for Agency Admins (Consultants) and Clients (Founders).
-- **Strategy Persistence:** Versioned storage of "Strategic Snapshots" (Business model, friction points, readiness).
-- **Execution Tracking:** Dynamic Postgres-backed task management synchronized with AI roadmap generation.
-- **AI Orchestration:** Edge Functions acting as the secure bridge between the Database and Gemini 3 API.
-
-### High-Level Data Flow
-1. **Wizard:** Answers are captured in `wizard_sessions` and `wizard_screen_answers`.
-2. **AI Processing:** Edge Functions fetch session data, call Gemini 3 (Pro/Flash), and write structured outputs to `readiness_assessments` and `roadmaps`.
-3. **Execution:** The Dashboard reads from `roadmaps` and `tasks` filtered by `client_id` via Row Level Security (RLS).
+### Data Ownership Flow
+- **Discovery (Wizard):** Raw inputs are stored as transient answers.
+- **Synthesis (Edge Functions):** Only Edge Functions are permitted to write to strategic tables (`snapshots`, `roadmaps`).
+- **Execution (Dashboard):** The UI reads locked strategy data and manages task status via Row Level Security (RLS).
 
 ---
 
 ## 2. Core Data Model (Schema)
 
-### 2.1 Identity & Organizations
-| Table | Purpose | Relationships |
-| :--- | :--- | :--- |
-| `organizations` | High-level account (The Agency or a Large Brand). | One-to-many with `clients`. |
-| `profiles` | Extended user data (references `auth.users`). | Linked to `organizations` via `org_id`. |
-| `clients` | Specific business/brand being consulted (The "Company"). | Belongs to `organization`. |
-| `projects` | A specific AI implementation track for a client. | Belongs to `client`. |
+Every user-facing table **must** include `org_id` to ensure absolute tenant isolation.
 
-### 2.2 The Wizard (Discovery)
-| Table | Purpose | Relationships |
+### 2.1 Identity & Access Control
+| Table | Purpose | Key Columns |
 | :--- | :--- | :--- |
-| `wizard_sessions` | Tracks a single onboarding journey progress. | Linked to `project_id`. |
-| `wizard_screen_answers` | Raw JSONB storage of answers per screen. | Linked to `wizard_session_id`. |
-| `ai_run_logs` | Logs every Gemini request/response for audit. | Linked to `session` or `project`. |
+| `organizations` | The high-level tenant (Agency or Enterprise). | `id`, `name`, `created_at` |
+| `profiles` | Extended user metadata. | `id` (references `auth.users.id`), `full_name`, `avatar_url` |
+| `org_members` | **Source of Truth for Permissions.** | `org_id`, `user_id`, `role` (`Owner`, `Consultant`, `Client`) |
 
-### 2.3 Strategic Output (Execution)
-| Table | Purpose | Relationships |
+### 2.2 Client & Project Hierarchy
+| Table | Purpose | Key Columns |
 | :--- | :--- | :--- |
-| `context_snapshots` | The "Locked" business essence (Model, Friction). | Versioned per `project`. |
-| `system_recommendations` | AI-suggested engines for the client. | Linked to `snapshot_id`. |
-| `readiness_assessments` | Score, Radar data, and Gap analysis. | Linked to `snapshot_id`. |
-| `roadmaps` | The 90-day strategy container. | One-to-one with `snapshot`. |
-| `roadmap_phases` | Sequence of phases (Foundation, Scale, etc). | Linked to `roadmap_id`. |
-| `tasks` | Actionable items decomposed from phases. | Linked to `roadmap_phase_id`. |
+| `clients` | The brands or companies being serviced. | `id`, `org_id`, `name`, `industry`, `website_url` |
+| `projects` | A specific strategy or implementation track. | `id`, `org_id`, `client_id`, `name`, `status` (`Discovery`, `Active`, `Archived`) |
+
+### 2.3 The Wizard & Discovery
+| Table | Purpose | Key Columns |
+| :--- | :--- | :--- |
+| `wizard_sessions` | Tracks discovery progress. | `id`, `org_id`, `project_id`, `current_step` |
+| `wizard_answers` | Transient storage for raw wizard inputs. | `session_id`, `screen_id`, `data` (JSONB) |
+
+### 2.4 The Strategic Hub (Locked Data)
+| Table | Purpose | Key Columns |
+| :--- | :--- | :--- |
+| `context_snapshots` | **Read-only** essence of the business. | `id`, `org_id`, `project_id`, `version`, `is_active` (bool), `summary`, `metrics` |
+| `roadmaps` | Linked 1:1 with a snapshot. | `id`, `org_id`, `snapshot_id`, `total_duration`, `roi_projection` |
+| `roadmap_phases` | Sequential execution phases. | `id`, `roadmap_id`, `title`, `order_index`, `outcomes` (JSONB) |
+| `tasks` | Actionable execution units. | `id`, `org_id`, `phase_id`, `title`, `owner` (`Client`, `Sun AI`), `status` |
 
 ---
 
@@ -54,147 +52,84 @@ Supabase serves as the backend backbone, providing identity, persistence, and se
 
 ```mermaid
 erDiagram
+    ORGANIZATION ||--o{ ORG_MEMBERS : "has"
     ORGANIZATION ||--o{ CLIENT : "manages"
     CLIENT ||--o{ PROJECT : "owns"
-    PROJECT ||--o{ WIZARD_SESSION : "runs"
-    WIZARD_SESSION ||--o{ WIZARD_ANSWER : "captures"
+    
+    PROJECT ||--o{ WIZARD_SESSION : "discovery"
+    WIZARD_SESSION ||--o{ WIZARD_ANSWERS : "captures"
     
     PROJECT ||--o{ CONTEXT_SNAPSHOT : "versions"
-    CONTEXT_SNAPSHOT ||--o{ SYSTEM_RECOMMENDATION : "suggests"
-    CONTEXT_SNAPSHOT ||--o{ READINESS_ASSESSMENT : "audits"
-    CONTEXT_SNAPSHOT ||--|{ ROADMAP : "defines"
+    CONTEXT_SNAPSHOT ||--|| ROADMAP : "defines (1:1)"
     
     ROADMAP ||--|{ ROADMAP_PHASE : "sequences"
-    ROADMAP_PHASE ||--o{ TASK : "generates"
+    ROADMAP_PHASE ||--o{ TASKS : "generates"
     
-    TASK }|--|| PROFILE : "assigns_to"
+    TASKS }|--|| PROFILES : "assigned_to"
 ```
 
 ---
 
-## 4. Indexing Strategy
+## 4. Row Level Security (RLS) Strategy
 
-To ensure high-velocity dashboard performance and secure filtering:
+Permission logic is strictly enforced via the `org_members` junction table.
 
-1. **Foreign Keys:** All `_id` columns (UUID) indexed for join performance.
-2. **Tenant Isolation:** Composite index on `(organization_id, client_id)` for RLS speed.
-3. **Temporal Ordering:** `created_at` DESC on `tasks` and `ai_run_logs`.
-4. **Status Filtering:** Index on `tasks(status, owner)` for dashboard view filtering.
-5. **Search Grounding:** GIN index on `wizard_screen_answers` JSONB for pattern matching.
+### 4.1 Base Permission Logic (SQL)
+Every table includes a policy that checks if the `auth.uid()` exists in `org_members` for the record's `org_id`.
 
----
-
-## 5. Row Level Security (RLS) Strategy
-
-We utilize a **Tenant-Based Isolation** model.
-
-### 5.1 Global Policies
-- **Agency Admins:** Access to all tables within their `organization_id`.
-- **Clients (Founders):** Access ONLY to their own `client_id` records.
-
-### 5.2 Table Specifics
-| Table | Client (Founder) | Agency (Consultant) | Logic |
-| :--- | :--- | :--- | :--- |
-| `projects` | SELECT | SELECT, UPDATE | Founder views status, Agency manages. |
-| `tasks` | SELECT, UPDATE (status) | ALL | Founder marks tasks "Complete". |
-| `ai_run_logs` | NONE | SELECT | Hidden technical audit logs. |
-| `wizard_sessions` | ALL | ALL | Collaborative discovery. |
-
-### 5.3 SQL Snippet (Example Policy)
 ```sql
--- Enforce that a Client can only see tasks belonging to their Organization
-CREATE POLICY "Clients can view their own tasks"
-ON public.tasks
-FOR SELECT
+-- Example: Policy for 'projects' table
+CREATE POLICY "Users can only access projects in their organization"
+ON public.projects
+FOR ALL
 USING (
-  auth.uid() IN (
-    SELECT profile_id FROM account_members 
-    WHERE organization_id = tasks.organization_id
+  org_id IN (
+    SELECT org_id FROM org_members WHERE user_id = auth.uid()
   )
 );
 ```
 
----
-
-## 6. Triggers & Database Functions
-
-1. **`update_updated_at_column()`**: Standard timestamp management.
-2. **`on_roadmap_phase_complete()`**: Auto-mark tasks as "In Progress" for the next phase.
-3. **`snapshot_strategy()`**: Function to move active wizard data into a read-only `context_snapshots` table upon "Strategic Approval."
-4. **`soft_delete_handler`**: Instead of deleting records, toggle an `is_deleted` flag for audit trails.
+### 4.2 Role-Based Permissions
+- **Owners/Consultants:** Full CRUD on all organization data.
+- **Clients:** SELECT access to snapshots and roadmaps; UPDATE access ONLY to task status.
 
 ---
 
-## 7. Edge Functions Architecture
+## 5. Triggers & Versioning Logic
 
-Edge Functions handle the "Brain" logic, keeping API keys and complex Gemini prompts off the client.
-
-| Function | Purpose | Gemini 3 Feature |
-| :--- | :--- | :--- |
-| `analyze-business` | S1: Market research. | Google Search Grounding |
-| `generate-diagnostics` | S2: Personalized questions. | Thinking Mode (2k) |
-| `calculate-readiness` | S4: Structural audit. | Thinking Mode (4k) |
-| `generate-roadmap` | S5: Strategic sequencing. | Thinking Mode (4k) |
-| `task-agent` | Dash: Roadmap to task list. | Structured Outputs (JSON) |
-| `intelligence-stream` | Real-time consultant feed. | Streaming responses |
+1. **Strategic Locking:** When a strategy is approved, an Edge Function creates a new `context_snapshot` with `is_active = true`. All previous snapshots for that `project_id` are toggled to `is_active = false`.
+2. **Read-Only Enforcement:** A trigger on `context_snapshots` prevents `UPDATE` or `DELETE` if `is_active = true` (except by the service role).
+3. **Auto-Tasking:** Upon `roadmap_phase` creation, a background trigger or Edge Function populates the `tasks` table.
 
 ---
 
-## 8. AI Agents & Gemini 3 Tools Mapping
+## 6. Edge Functions & AI Orchestration
 
-| Agent Name | Wizard Step / Feature | Gemini 3 Feature |
-| :--- | :--- | :--- |
-| **The Researcher** | Step 1 (Context) | Search Grounding + Citations |
-| **The Diagnostic Partner** | Step 2 (Diagnostics) | Structured JSON Outputs |
-| **The Architect** | Step 3 (Systems) | Function Calling (System Selection) |
-| **The Auditor** | Step 4 (Readiness) | Thinking Mode (Deep Reasoning) |
-| **The Planner** | Step 5 & Dashboard | Multi-step Task Decomposition |
-| **The Executive Partner** | Dashboard Intelligence | Real-time Streaming |
+Only Edge Functions write to the strategy tables. UI-driven writes are restricted to `wizard_answers` and `task` status.
 
----
-
-## 9. Data Flow Diagrams
-
-### Wizard → Persistence → Dashboard
-```mermaid
-sequenceDiagram
-    participant UI as Wizard UI
-    participant Edge as Supabase Edge Function
-    participant G3 as Gemini 3 API
-    participant DB as Postgres (Supabase)
-
-    UI->>Edge: Submit Diagnostics (Step 2)
-    Edge->>G3: generateContent(context + thinking)
-    G3-->>Edge: Structured JSON (Problem/Solution)
-    Edge->>DB: UPSERT wizard_screen_answers
-    Edge-->>UI: Return streaming results
-    DB->>UI: Dashboard re-syncs via Realtime
-```
+| Function | AI Agent | Tooling | DB Interaction |
+| :--- | :--- | :--- | :--- |
+| `analyze-business` | Researcher | Google Search Grounding (Targeted to website) | Write: `wizard_answers` |
+| `assess-readiness` | Auditor | Gemini 3 Pro (Thinking: 4k) | Write: `readiness_assessments` |
+| `generate-strategy` | Strategist | Gemini 3 Pro (Thinking: 4k) | Write: `snapshots`, `roadmaps` |
+| `task-planner` | Planner | Gemini 3 Flash (Structured) | Write: `tasks` |
 
 ---
 
-## 10. Core vs Advanced Architecture
+## 7. Production Readiness Checklist
 
-### CORE (P0)
-- Supabase Auth (Email/Google).
-- Basic RLS (Organization isolation).
-- Wizard Step persistence (S1-S5).
-- Task management (CRUD).
-- Gemini 3 Flash for discovery steps.
+### 🛡️ Security & Privacy
+- [ ] Every user-facing table has RLS enabled.
+- [ ] Tenant isolation verified: `org_id` present and indexed on all tables.
+- [ ] Service Role Key used exclusively in Edge Functions for writing locked data.
 
-### ADVANCED (P1+)
-- **Google Search Grounding:** Verified market analysis.
-- **Thinking Budgets:** High-fidelity strategy reasoning.
-- **RAG:** Uploading business docs (PDF/Excel) to `supabase_storage` for custom readiness audits.
-- **Function Calling:** AI Agent updating DB records directly (e.g., "AI agent marks Phase 1 complete").
+### ⚡ Performance & Scalability
+- [ ] Composite indexes on `(org_id, project_id)` for RLS performance.
+- [ ] Index on `tasks.status` and `tasks.phase_id` for dashboard velocity.
+- [ ] GIN index on JSONB answer columns for market trend analysis.
 
----
-
-## 11. Production Readiness Checklist
-
-- [ ] **Security:** All tables have RLS enabled.
-- [ ] **Multi-Tenancy:** `organization_id` column present on every user-facing table.
-- [ ] **Monitoring:** Supabase Edge Function logs connected to alerting.
-- [ ] **AI Fallbacks:** Graceful handling of Gemini 503 or safety filter blocks.
-- [ ] **Rate Limiting:** Postgres-level rate limiting on wizard session creation.
-- [ ] **Backup:** Daily PITR (Point-in-Time Recovery) enabled.
+### 🚀 Operational Stability
+- [ ] **Rate Limiting:** Implemented per `user_id` and `org_id` within Edge Functions.
+- [ ] **Log Retention:** AI run logs moved to Supabase Storage after 30 days.
+- [ ] **File Strategy:** `supabase_storage` bucket configured for brand assets with RLS policies mirroring the `organizations` table.
+- [ ] **AI Fallback:** Standardized "Consultant Note" returned if Gemini safety filters block a response.
