@@ -16,36 +16,30 @@ Screen 1 is the "Initialization" phase. We don't just collect data; we **verify*
 | **Google Search Grounding** | Verifies the company's existence, reviews, and market reputation. |
 | **URL Context Tool** | Crawls the provided website to extract service offerings and brand voice. |
 | **Deep Research** | Identifies the primary business model (e.g., "High-ticket B2B" vs "DTC Subscription"). |
-| **Text Generation** | Streams the "Consultant's Briefing" in the right panel. |
+| **Text Generation** | Streams the "Consultant's Briefing" in the right panel using `gemini-3-flash-preview`. |
 
 ---
 
-## 3. The Implementation Prompt (Internal)
+## 3. The Multi-Step Agent Logic
 
-> **AGENT_TASK:** *The Strategic Researcher*  
-> **INPUT:** `companyName`, `industry`, `websiteUrl`, `businessDescription`.  
-> **ACTION:** 
-> 1. Use `googleSearch` to find the company's digital footprint.
-> 2. Analyze the `websiteUrl` to identify current "Manual Drag" indicators (e.g., lack of AI chat, static landing pages).
-> 3. Synthesize a "Market Briefing" for the Right Panel.
-> **OUTPUT_STRUCTURE:**
-> - `detectedModel`: (e.g., "B2B SaaS focused on mid-market logistics")
-> - `marketObservations`: (3 sharp insights about their specific niche)
-> - `readinessBaseline`: (Preliminary assessment based on digital footprint)
+1. **Step 1: Input Detection:** As soon as a URL and a substantive description (>30 chars) are entered, the session initializes.
+2. **Step 2: Grounded Search:** The agent uses `googleSearch` to cross-reference the `companyName` with current market data.
+3. **Step 3: Business Model Mapping:** The agent categorizes the business into one of the core industries (e.g., Real Estate, Luxury Fashion, SaaS).
+4. **Step 4: Right-Panel Synthesis:** A real-time executive brief is streamed to the user, reflecting their own business data back to them with high-end strategic insights.
 
 ---
 
 ## 4. Real-World Execution Examples
 
-### Example: Real Estate Agency ("Haven Realty")
-- **User Input:** "Luxury boutique agency in Miami."
-- **AI Research:** Finds their Zillow profile and Instagram. Sees they have 50+ listings but low engagement on social.
-- **Intelligence Note:** "Haven Realty has significant inventory velocity but lacks automated lead nurture. Grounding suggests Miami luxury buyers expect 24/7 concierge response."
-
-### Example: Fashion Brand ("Aura Couture")
+### Example: Luxury Fashion ("Aura Couture")
 - **User Input:** "Sustainability-focused luxury silk brand."
 - **AI Research:** Crawls their Shopify store. Notes high-quality imagery but static product descriptions.
-- **Intelligence Note:** "Aura Couture occupies the 'Quiet Luxury' niche. Digital footprint shows a gap in personalized styling orchestration."
+- **Intelligence Note:** "Aura Couture occupies the 'Quiet Luxury' niche. Digital footprint shows a gap in personalized styling orchestration. We have identified SKU management as a potential scale ceiling."
+
+### Example: SaaS Startup ("LogiScale")
+- **User Input:** "Mid-market logistics optimization platform."
+- **AI Research:** Finds their LinkedIn page and crunchbase profile. Notes recent Series A funding.
+- **Intelligence Note:** "LogiScale is entering a high-velocity growth phase. Current digital footprint suggests founder-led sales is reaching its limit. Transition to automated top-of-funnel is critical."
 
 ---
 

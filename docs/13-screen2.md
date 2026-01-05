@@ -7,63 +7,54 @@
 ---
 
 ## 1. Executive Purpose
-Screen 2 is the "Diagnostic" phase. It uses the context established in Screen 1 to present a bespoke audit. We replace generic questions with "Leverage Points" that matter to that specific industry.
+Screen 2 is the "Diagnostic" phase. It uses the context established in Screen 1 (Research) to present a bespoke audit. We replace generic questions with "Leverage Points" that matter to that specific industry.
 
 ## 2. AI Feature Orchestration
 
 | Feature | Application in Screen 2 |
 | :--- | :--- |
-| **Gemini Thinking (2k)** | Used to reason through the *cause-and-effect* of industry problems. |
-| **Structured Outputs** | Enforces a strict JSON schema for the Problem-Solution pairing. |
-| **Maps Grounding** | Used for **Real Estate** and **Hospitality** to identify local market friction. |
-| **RAG (Logic)** | Cross-references the user's "Blockers" against our library of AI Systems. |
+| **Gemini Thinking (4k)** | Used to reason through the *cause-and-effect* of industry problems. |
+| **Structured Outputs** | Enforces the `DiagnosticQuestionSet` schema for the Problem-Solution pairing. |
+| **Industry Grounding** | Filters diagnostic options based on the sector detected in Screen 1. |
+| **RAG (Logic)** | Cross-references user blockers against a library of 15+ specialized AI Agents. |
 
 ---
 
-## 3. Industry-Specific Logic Modules
+## 3. The "Problem-Solution" Pairing Logic
 
-The AI Agent generates unique options based on the detected sector:
+Screen 2 is where the AI proves its value by pairing a business friction point with a technical engine.
 
-### A. Real Estate & Development
-- **Pain Point:** "Lead leak between listing and viewing."
-- **AI Solution:** *Lead-to-Viewing Orchestrator* (Automated SMS/Email nurture + Calendar sync).
-- **Executive Outcome:** 40% increase in viewing conversion.
+### Real Estate & Development
+- **Problem:** "Lead leakage during listing follow-up."
+- **AI Solution:** *Lead-to-Viewing Orchestrator* (RAG-trained on listing data to handle SMS inquiries).
+- **Executive Outcome:** 40% higher viewing conversion.
 
-### B. Fashion & Luxury
-- **Pain Point:** "High SKU count slowing down marketing production."
-- **AI Solution:** *Creative Asset Engine* (Image generation for mockups + Automated SEO descriptions).
-- **Executive Outcome:** Reclaim 20+ hours of creative team time weekly.
+### Fashion & Luxury
+- **Problem:** "High-velocity SKU marketing production."
+- **AI Solution:** *Creative Asset Engine* (Imagen-4 for mockup generation + Automated luxury copy).
+- **Executive Outcome:** Reclaims 20+ hours of creative team time.
 
-### C. Startups & SaaS (MVP Focus)
-- **Pain Point:** "Founder-led sales is a scaling bottleneck."
-- **AI Solution:** *Founder-Clone Agent* (RAG-trained on founder's voice for initial outreach).
-- **Executive Outcome:** Automated top-of-funnel without losing personal touch.
-
-### D. Travel & Hospitality
-- **Pain Point:** "Manual concierge work for restaurant/tour recs."
-- **AI Solution:** *Hyper-Local Concierge* (Gemini + Maps Grounding for real-time local booking).
+### Travel & Hospitality
+- **Problem:** "Manual scheduling for restaurant/tour concierge."
+- **AI Solution:** *Hyper-Local Concierge Agent* (Gemini + Maps Grounding for real-time local booking).
 - **Executive Outcome:** 5-star experience delivery at 0 marginal cost.
 
 ---
 
-## 4. The Implementation Prompt (Internal)
+## 4. The Multi-Step Agent Logic
 
-> **AGENT_TASK:** *The Diagnostic Architect*  
-> **CONTEXT:** Ingest `Screen 1` research (Industry, Model, Market Positioning).  
-> **ACTION:** 
-> 1. Use `Thinking Mode` to identify the "Primary Revenue Lever" for this specific industry.
-> 2. Generate 4 diagnostic questions where every "Problem" option is paired with a specific "AI Agent Feature."
-> 3. Ensure "Why it Matters" notes focus on **Cash, Time, or Speed**.
-> **OUTPUT_SCHEMA:** 
-> - Must follow the `DiagnosticQuestionSet` TypeScript interface.
+1. **Step 1: Context Ingestion:** The agent reads the `researchContext` from the Researcher Agent (Screen 1).
+2. **Step 2: Thinking Loop:** The agent reasons through the "Primary Revenue Lever" for that specific company.
+3. **Step 3: Question Generation:** A set of 4 questions is generated using industry-specific nouns and scenarios.
+4. **Step 4: Pairing:** For every option (Problem), a "Proposed Fix" (AI Feature) is mapped.
+5. **Step 5: Narrative Synthesis:** The Right Panel explains *why* these specific diagnostics were chosen for the user's sector.
 
 ---
 
-## 5. User Experience: The "Proposed Fix"
-When a user clicks a problem (e.g., "Slow listing uploads"), the UI immediately displays a "Proposed Fix" box:
-- **Feature Name:** "Visual Listing Engine"
-- **Logic:** "Uses Nano Banana Pro to auto-tag photos and generate luxury copy in < 2 seconds."
-- **Goal:** This educates the user on the value of the systems they will select in Step 3.
+## 5. Success Metrics
+- **Relevance:** > 95% of users identify with the problems presented.
+- **Education:** The user understands that an AI Agent is a "Fix" for a specific "Leak."
+- **Conversion:** User proceeds to Step 3 with a clear intent for which systems they need.
 
 ---
 *Created by Sun AI Architectural Council*
