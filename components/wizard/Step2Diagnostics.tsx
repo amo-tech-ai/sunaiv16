@@ -27,7 +27,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
     aiSolutions: string[] = []
   ) => (
     <section className="space-y-6">
-      <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">{label}</h2>
+      <h2 className="text-xs uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">{label}</h2>
       <div className="grid grid-cols-1 gap-4">
         {options.map((opt, idx) => {
           const isSelected = data[category] === opt;
@@ -37,25 +37,24 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
             <div key={opt} className="space-y-2">
               <button 
                 onClick={() => updateData({ [category]: opt })}
-                className={`w-full text-left p-6 border transition-all text-sm font-medium tracking-wide flex justify-between items-center ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+                className={`w-full text-left p-6 border transition-all text-base font-normal flex justify-between items-center ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
               >
-                <span>{opt}</span>
+                <span className="font-body-serif">{opt}</span>
                 {isSelected && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-amber-400">Targeted</span>
-                    <span className="text-amber-400">●</span>
+                    <span className="text-amber-400 text-lg">●</span>
                   </div>
                 )}
               </button>
               
               {isSelected && solution && (
-                <div className="p-6 bg-amber-50 border border-amber-100 animate-fade-enter-active">
+                <div className="p-6 bg-[#FAF8F6] border border-[#EFE9E4] animate-fade-enter-active">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                    <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-amber-700">Proposed Engine Intervention</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                    <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-amber-800">The Fix</span>
                   </div>
-                  <p className="text-sm text-amber-950 font-body-serif italic leading-relaxed">
-                    “{solution}”
+                  <p className="text-sm text-[#444] font-body-serif italic leading-relaxed">
+                    {solution}
                   </p>
                 </div>
               )}
@@ -70,31 +69,31 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
     <div className="space-y-16 animate-fade-enter-active">
       <header>
         <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">
-          {industryContent?.dynamicTitle || `Where is the friction?`}
+          {industryContent?.dynamicTitle || `Where is it hurting?`}
         </h1>
-        <p className="text-lg text-[#666] font-light italic font-body-serif">“We must identify exactly where you are losing time and money before we build.”</p>
+        <p className="text-lg text-[#666] font-light italic font-body-serif">“Be honest about the friction. We can't build a shortcut until we know what's blocking the road.”</p>
       </header>
 
       <div className="space-y-12">
         {renderOptionPair(
           'blocker', 
-          'Revenue & Acquisition', 
+          'Money & Growth', 
           industryContent?.salesOptions, 
           industryContent?.salesAIFeatures
         )}
 
         {renderOptionPair(
           'manualWork', 
-          'Team Capacity', 
+          'The Daily Grind', 
           industryContent?.manualWorkOptions, 
           industryContent?.manualWorkAIFeatures
         )}
 
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Delivery Speed</h2>
-          <p className="text-base text-[#666] font-body-serif">How long does it take from 'Hello' to a finished client action?</p>
+          <h2 className="text-xs uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Your Speed</h2>
+          <p className="text-base text-[#666] font-body-serif">Once a customer says "yes," how long does it take you to deliver?</p>
           <div className="flex flex-wrap gap-4">
-            {["Same Day", "2-3 Days", "1 Week", "Multiple Weeks"].map((opt) => (
+            {["Within a day", "A few days", "About a week", "Multiple weeks"].map((opt) => (
               <button 
                 key={opt}
                 onClick={() => updateData({ speed: opt })}
@@ -108,7 +107,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
 
         {renderOptionPair(
           'priority', 
-          'Strategic Mandate', 
+          'Your #1 Focus', 
           industryContent?.priorityOptions, 
           industryContent?.priorityAIFeatures
         )}
@@ -117,16 +116,16 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
       <div className="flex flex-col md:flex-row gap-4 pt-12">
         <button 
           onClick={prevStep}
-          className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+          className="flex-1 py-6 text-[10px] uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
         >
-          ← Back to Context
+          ← Go Back
         </button>
         <button 
           disabled={!isComplete}
           onClick={nextStep}
-          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all shadow-xl shadow-amber-900/5 ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+          className={`flex-[2] py-6 text-[10px] uppercase tracking-[0.3em] font-bold transition-all shadow-xl shadow-amber-900/5 ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          View Recommended Architecture →
+          See Your AI Architecture →
         </button>
       </div>
     </div>

@@ -1,34 +1,29 @@
+
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 
 /**
  * Conducts deep research on a company using Google Search grounding.
- * Analyzes market position, website content, and business model.
  */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
   const websiteContext = website 
-    ? `Analyze the digital presence and website at ${website}. 
-       Identify:
-       - Core service offerings, niche expertise, and target audience.
-       - For Fashion/Retail: Assess social media footprint, influencer engagement, and visual branding.
-       - Evident manual friction (e.g., generic contact forms, lack of real-time scheduling, manual checkout processes).
-       - Current technology stack and market positioning.` 
-    : "Since no website was provided, rely on current market data and sector trends for this niche.";
+    ? `Take a look at ${website}. 
+       What do they actually do? Who are they helping? 
+       Find 3 things that probably feel slow or manual for them right now based on their site setup.` 
+    : "Look at common trends for a business like this in the ${industry} niche.";
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Conduct a Strategic Research Audit for ${companyName} in the ${industry} sector. 
-    Context: ${description}
+    contents: `Help me understand ${companyName} in the ${industry} space. 
+    Description: ${description}
     ${websiteContext}
     
-    Executive Requirements:
-    1. EXPLICITLY state the Business Model (e.g., Business Model: High-Ticket B2B).
-    2. Extract 3-4 specific operational friction points verified through search or market context.
-    3. For Fashion/Retail, identify if they are 'Social-First' or 'Inventory-Heavy' and note the corresponding bottleneck.
-    4. Identify the "Scale Ceiling" — what is preventing them from 10x growth?
+    1. What's their main way of making money? (e.g. Selling clothes online, B2B services).
+    2. What's likely slowing them down right now?
+    3. What's the 'Big Goal' they are missing out on?
     
-    Output a professional, editorial summary for the executive.`,
+    Write a short, friendly summary as if we're just chatting about their business strategy.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
@@ -37,7 +32,7 @@ export async function getBusinessIntelligence(industry: string, description: str
 
   const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
     ?.map((chunk: any) => ({
-      title: chunk.web?.title || 'Market Reference',
+      title: chunk.web?.title || 'Market Source',
       uri: chunk.web?.uri
     }))
     .filter((c: any) => c.uri) || [];
@@ -45,14 +40,13 @@ export async function getBusinessIntelligence(industry: string, description: str
   return {
     text: response.text,
     citations,
-    // Extract business model reliably from the narrative text
-    detectedModel: response.text.match(/Business Model:?\s*([^\n\.]+)/i)?.[1]?.trim() || "Executive Service Provider"
+    detectedModel: response.text.match(/Business Model:?\s*([^\n\.]+)/i)?.[1]?.trim() || "Independent Business"
   };
 }
 
 /**
- * Generates a deeply personalized diagnostic based on Screen 1 research.
- * Uses Thinking Mode to map specific business problems to high-value AI solutions.
+ * Generates a deeply personalized diagnostic.
+ * Phrased in simple, everyday business language.
  */
 export async function getIndustrySpecificQuestions(industry: string, context: { 
   researchResults: string, 
@@ -63,16 +57,15 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Based on the Strategic Research: "${context.researchResults}" for ${context.companyName}.
+    contents: `Based on what we know about ${context.companyName}: "${context.researchResults}".
     
-    Design a bespoke operational diagnostic for the ${industry} sector.
+    Create a simple 4-question checkup for them.
     
-    CRITICAL REQUIREMENTS:
-    - Generate 4 options for: Revenue Blocks, Operational Drag, and Strategic Priorities.
-    - If Fashion: Use terms like 'seasonal drops', 'SKU sprawl', 'social ad spend fatigue'.
-    - If Retail: Use terms like 'foot traffic', 'stockouts', 'customer loyalty', 'fulfillment latency'.
-    - For EVERY individual problem option, generate a corresponding AI Solution Feature (e.g., 'Automated SKU Orchestrator' or 'Social Sentiment Engine').
-    - The AI Solution must describe the bottom-line value and the "Engine" being deployed.`,
+    RULES:
+    - Phrasing: Use "I'm losing money because..." or "My team is stuck doing..."
+    - No corporate jargon. No "Revenue Blocks." Use "Sales Frustrations."
+    - AI Solutions: Describe them as a helpful teammate. "This bot handles all your emails" instead of "Deploying an Email Orchestration Engine."
+    - Make it feel personal to their specific niche.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 2048 },
@@ -80,13 +73,13 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          dynamicTitle: { type: Type.STRING, description: "An editorial heading for the diagnostic." },
-          salesOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions mapped 1:1 to salesOptions." },
-          manualWorkOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          manualWorkAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions mapped 1:1 to manualWorkOptions." },
-          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions mapped 1:1 to priorityOptions." }
+          dynamicTitle: { type: Type.STRING, description: "A friendly, clear heading like 'Where does it hurt most?'" },
+          salesOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'We aren't [Result] because [Reason]'" },
+          salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This will fix it by doing [Task] for you.'" },
+          manualWorkOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'We waste too many hours on [Task]'" },
+          manualWorkAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This handles [Task] automatically.'" },
+          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'My #1 goal is to [Outcome]'" },
+          priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This makes [Goal] happen faster.'" }
         },
         required: [
           "dynamicTitle", 
