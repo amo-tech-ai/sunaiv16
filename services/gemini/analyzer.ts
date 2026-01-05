@@ -1,28 +1,38 @@
-
-import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 import { UserData } from "../../types";
 
 /**
- * Analyzes the current dashboard state to find risks or narrative breakthroughs.
+ * Executive Risk Audit Agent
+ * Analyzes dashboard execution health and provides proactive narrative guidance.
  */
 export async function getRiskAssessment(userData: UserData): Promise<string> {
   const completedCount = userData.tasks?.filter(t => t.status === 'completed').length || 0;
   const totalCount = userData.tasks?.length || 0;
+  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
   
   const ai = getAI();
+  
+  const prompt = `
+    Conduct a Proactive Risk Audit for ${userData.companyName}.
+    
+    DATA STATE:
+    - Phase: ${userData.roadmap?.[0]?.title}
+    - Progress: ${completedCount}/${totalCount} tasks (${Math.round(progressPercent)}%)
+    - Active Architecture: ${userData.selectedSystems.join(', ')}
+    - Core Priority: ${userData.priority}
+
+    TASK:
+    Generate a 3-sentence narrative for the Executive Command Center.
+    - Sentence 1: Direct assessment of current velocity.
+    - Sentence 2: Identify one "High-Leverage" next step or potential risk area.
+    - Sentence 3: Connect current actions to the long-term ROI of the ${userData.selectedSystems[0]}.
+
+    TONE: Senior Partner. Direct. Sophisticated.
+  `;
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Analyze the execution progress for ${userData.companyName}.
-    
-    Stats: ${completedCount}/${totalCount} tasks completed.
-    Current Priority: ${userData.priority}
-    Selected Systems: ${userData.selectedSystems.join(', ')}
-    
-    Provide a professional, human-like narrative note (2-3 sentences) for the executive. 
-    If progress is slow, explain why the "Foundational Drag" is expected. 
-    If progress is good, explain the "Scale Opportunity" ahead.
-    Avoid jargon. Use Lora font style (editorial).`,
+    contents: prompt,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
     }

@@ -17,7 +17,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
 
   if (isLoading) return <DiagnosticSkeleton />;
 
-  const renderOptionPair = (
+  const renderDiagnosticSection = (
     category: 'blocker' | 'manualWork' | 'speed' | 'priority', 
     label: string, 
     question: string,
@@ -25,10 +25,10 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
     aiSolutions: string[] = [],
     whyText: string
   ) => (
-    <section className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-xs uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">{label}</h2>
-        <p className="text-lg font-serif text-[#1A1A1A]">{question}</p>
+    <section className="space-y-8">
+      <div className="space-y-3">
+        <h2 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA] border-l-2 border-amber-400 pl-4">{label}</h2>
+        <h3 className="text-2xl font-serif text-[#1A1A1A] leading-tight">{question}</h3>
       </div>
       
       <div className="grid grid-cols-1 gap-4">
@@ -37,23 +37,28 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
           const solution = aiSolutions[idx];
 
           return (
-            <div key={opt} className="space-y-2">
+            <div key={opt} className="space-y-3">
               <button 
                 onClick={() => updateData({ [category]: opt })}
-                className={`w-full text-left p-6 border transition-all text-base font-normal flex justify-between items-center group ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+                className={`w-full text-left p-6 border transition-all duration-300 flex justify-between items-center group ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-lg shadow-amber-900/5' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
               >
-                <span className="font-body-serif leading-relaxed">{opt}</span>
-                {isSelected && <span className="text-amber-400 text-lg">●</span>}
+                <span className="text-base font-medium tracking-tight leading-relaxed">{opt}</span>
+                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isSelected ? 'bg-amber-400 scale-125' : 'bg-[#EFE9E4] group-hover:bg-[#D1C7BD]'}`}></div>
               </button>
               
               {isSelected && solution && (
-                <div className="p-6 bg-[#FAF8F6] border border-amber-100 animate-fade-enter-active">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                    <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-amber-800">The Proposed Fix</span>
+                <div className="p-8 bg-[#FAF8F6] border border-amber-100/50 animate-fade-enter-active relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                    <svg width="60" height="60" viewBox="0 0 100 100">
+                      <path d="M10 50 L90 50 M50 10 L50 90" stroke="currentColor" strokeWidth="2" />
+                    </svg>
                   </div>
-                  <p className="text-sm text-[#444] font-body-serif italic leading-relaxed">
-                    {solution}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-1 rounded-full bg-amber-500"></div>
+                    <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-amber-800">Proposed Strategic Fix</span>
+                  </div>
+                  <p className="text-base text-[#444] font-body-serif italic leading-relaxed">
+                    “{solution}”
                   </p>
                 </div>
               )}
@@ -62,73 +67,76 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         })}
       </div>
 
-      <div className="bg-[#FDFCFB] p-5 border-l border-[#EFE9E4] mt-4">
-        <span className="text-[10px] uppercase tracking-widest font-bold text-[#999] block mb-1">Why it matters</span>
-        <p className="text-xs text-[#666] font-body-serif leading-relaxed italic">{whyText}</p>
+      <div className="bg-[#FDFCFB] p-6 border-l border-[#EFE9E4] mt-6">
+        <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#CCC] block mb-2">Architect's Note</span>
+        <p className="text-xs text-[#888] font-body-serif leading-relaxed italic">{whyText}</p>
       </div>
     </section>
   );
 
   return (
-    <div className="space-y-16 animate-fade-enter-active">
-      <header>
-        <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">
-          {industryContent?.dynamicTitle || `Diagnostic Assessment`}
+    <div className="space-y-20 animate-fade-enter-active pb-24">
+      <header className="space-y-6">
+        <h1 className="text-5xl font-serif leading-[1.15]">
+          {industryContent?.dynamicTitle || `Operational Diagnostic`}
         </h1>
-        <p className="text-lg text-[#666] font-light italic font-body-serif">“We identify the money leaks so we can plug them with automation.”</p>
+        <div className="max-w-md h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
+        <p className="text-lg text-[#666] font-light font-body-serif italic max-w-lg">
+          We identify the specific friction points in your current model to map the precise AI engines required for scale.
+        </p>
       </header>
 
-      <div className="space-y-20">
-        {renderOptionPair(
+      <div className="space-y-24">
+        {renderDiagnosticSection(
           'blocker', 
-          'Sales & Revenue Growth', 
-          industryContent?.salesQuestion || "Where are you losing sales right now?",
+          'Revenue & Acquisition', 
+          industryContent?.salesQuestion || "Which area represents your primary revenue bottleneck?",
           industryContent?.salesOptions, 
           industryContent?.salesAIFeatures,
           industryContent?.salesWhy
         )}
 
-        {renderOptionPair(
+        {renderDiagnosticSection(
           'manualWork', 
-          'Online Presence & Content', 
-          industryContent?.contentQuestion || "What is slowing down your content production?",
+          'Brand Presence & Content', 
+          industryContent?.contentQuestion || "Where is manual content production slowing your speed-to-market?",
           industryContent?.contentOptions, 
           industryContent?.contentAIFeatures,
           industryContent?.contentWhy
         )}
 
-        {renderOptionPair(
+        {renderDiagnosticSection(
           'speed', 
-          'Speed to Market', 
-          "How can we speed up your launch cycle?",
+          'Execution Velocity', 
+          "What is the current target for your operational launch cycle?",
           industryContent?.speedOptions, 
           industryContent?.speedAIFeatures,
           industryContent?.speedWhy
         )}
 
-        {renderOptionPair(
+        {renderDiagnosticSection(
           'priority', 
-          'Executive Priority', 
-          industryContent?.priorityQuestion || "What is your #1 goal this year?",
+          'Executive Outcome', 
+          industryContent?.priorityQuestion || "What is your single most important objective for the next 90 days?",
           industryContent?.priorityOptions, 
           industryContent?.priorityAIFeatures,
           industryContent?.priorityWhy
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 pt-12 border-t border-[#EFE9E4]">
+      <div className="flex flex-col md:flex-row gap-6 pt-16 border-t border-[#EFE9E4]">
         <button 
           onClick={prevStep}
-          className="flex-1 py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
+          className="flex-1 py-6 text-[10px] uppercase tracking-[0.4em] font-bold transition-all border border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#FAF8F6]"
         >
-          ← Adjust Context
+          Adjust Context
         </button>
         <button 
           disabled={!isComplete}
           onClick={nextStep}
-          className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all shadow-xl shadow-amber-900/5 ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+          className={`flex-[2] py-6 text-[10px] uppercase tracking-[0.4em] font-bold transition-all shadow-2xl shadow-amber-900/10 ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          Architect My Solution →
+          Architect Strategic Engine →
         </button>
       </div>
     </div>

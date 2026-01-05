@@ -26,14 +26,15 @@ const App: React.FC = () => {
     console.error(`Error in ${context}:`, err);
     setIntelligence(prev => ({
       ...prev,
-      notes: "Our intelligence protocols encountered a temporary interruption. Re-establishing link...",
+      notes: "Our intelligence protocols encountered a temporary interruption. Re-establishing secure link...",
       status: 'idle'
     }));
   }, [setIntelligence]);
 
   // Step 1: Initial Research & Grounding
+  // Triggered when significant context is added.
   useEffect(() => {
-    const shouldResearch = step === 1 && userData.industry && userData.description.length > 30;
+    const shouldResearch = step === 1 && userData.industry && userData.description.length > 50;
     
     if (shouldResearch) {
       const research = async () => {
@@ -41,7 +42,7 @@ const App: React.FC = () => {
         setIntelligence(prev => ({ 
           ...prev, 
           status: 'analyzing', 
-          notes: 'Synthesizing market intelligence for your specific sector...' 
+          notes: 'Synthesizing market intelligence and verifying digital footprint...' 
         }));
         
         try {
@@ -57,9 +58,9 @@ const App: React.FC = () => {
             status: 'complete',
             notes: res.text,
             observations: [
-              "Business model footprint verified",
-              "Primary revenue velocity blockers identified",
-              "Initial readiness baseline established"
+              "Business model footprint verified via search grounding",
+              "Primary revenue leaks identified in current model",
+              "Initial readiness baseline established for " + userData.industry
             ],
             citations: res.citations
           }));
@@ -70,18 +71,19 @@ const App: React.FC = () => {
         }
       };
       
-      const timer = setTimeout(research, 800); // Debounce to prevent multiple calls
+      const timer = setTimeout(research, 1200); // Increased debounce for deliberate feel
       return () => clearTimeout(timer);
     }
-  }, [step, userData.industry, userData.description, handleError, setIntelligence]);
+  }, [step, userData.industry, userData.description, userData.companyName, userData.website, handleError, setIntelligence]);
 
   // Step 2-5 Strategic Orchestration
   useEffect(() => {
     const runStepLogic = async () => {
       switch (step) {
         case 2:
+          // Regenerate diagnostics if context changed significantly or if null
           if (!industryContent && userData.industry) {
-            handleStreamingNotes(`Connecting your ${userData.industry} challenges to specific strategic solutions. Our priority is operational velocity and reclaimed time.`);
+            handleStreamingNotes(`Connecting your ${userData.industry} challenges to specific strategic solutions. We are identifying the exact friction points in your current revenue funnel.`);
             try {
               const content = await getIndustrySpecificQuestions(userData.industry, { ...userData });
               setIndustryContent(content);
@@ -92,7 +94,7 @@ const App: React.FC = () => {
           break;
         case 3:
           if (recommendations.length === 0) {
-            handleStreamingNotes(`Mapping your unique friction points to high-impact AI architecture. We are selecting tools that drive immediate ROI.`);
+            handleStreamingNotes(`Mapping your unique friction points to a modular AI architecture. We are selecting high-impact engines that prioritize speed-to-market.`);
             try {
               const res = await getSystemRecommendations(userData);
               setRecommendations(res);
@@ -103,7 +105,7 @@ const App: React.FC = () => {
           break;
         case 4:
           if (!assessment && userData.selectedSystems.length > 0) {
-            handleStreamingNotes(`Conducting an evidence-based operational audit. We are identifying the distance between your current state and automated scale.`);
+            handleStreamingNotes(`Conducting a multi-dimensional operational audit. We are measuring the distance between your current data maturity and automated scale.`);
             try {
               const res = await getReadinessAssessment(userData);
               setAssessment(res);
@@ -120,7 +122,7 @@ const App: React.FC = () => {
           break;
         case 5:
           if (!userData.roadmap && assessment) {
-            handleStreamingNotes(`Architecting your 90-day execution plan. Each phase is sequenced to clear clutter and establish a persistent growth engine.`);
+            handleStreamingNotes(`Sequencing your 90-day execution plan. Phases are architected to clear operational clutter first, followed by rapid AI deployment.`);
             try {
               const res = await getRoadmap(userData);
               updateUserData({ roadmap: res });
@@ -132,14 +134,14 @@ const App: React.FC = () => {
       }
     };
     runStepLogic();
-  }, [step, userData.blocker, userData.manualWork, userData.priority, userData.industry, handleStreamingNotes, handleError, assessment, recommendations.length, industryContent, updateUserData]);
+  }, [step, userData.blocker, userData.manualWork, userData.priority, userData.industry, handleStreamingNotes, handleError, assessment, recommendations.length, industryContent, updateUserData, userData]);
 
   // Architecture Blueprint (SVG) Generation Loop
   useEffect(() => {
     if (step === 3 && userData.selectedSystems.length > 0 && !userData.svgArchitecture) {
       getArchitectureBlueprint(userData)
         .then(svg => updateUserData({ svgArchitecture: svg }))
-        .catch(err => console.warn("SVG Generation skipped:", err));
+        .catch(err => console.warn("Architecture visualization deferred:", err));
     }
   }, [userData.selectedSystems, step, userData.svgArchitecture, updateUserData]);
 
@@ -155,13 +157,13 @@ const App: React.FC = () => {
   return (
     <ThreePanelLayout
       left={
-        <div className="space-y-10">
-          <div className="space-y-4">
-            <div className="flex justify-between text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">
-              <span>Strategic Alignment</span>
-              <span>{Math.round((step / 5) * 100)}%</span>
+        <div className="space-y-12">
+          <div className="space-y-6">
+            <div className="flex justify-between text-[10px] uppercase tracking-[0.5em] font-bold text-[#AAA]">
+              <span>Strategy Progress</span>
+              <span className="text-amber-600">{Math.round((step / 5) * 100)}%</span>
             </div>
-            <div className="h-1 bg-[#F2F0EE] w-full overflow-hidden">
+            <div className="h-[2px] bg-[#F2F0EE] w-full overflow-hidden">
               <div 
                 className="h-full bg-[#1A1A1A] transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1)" 
                 style={{ width: `${(step / 5) * 100}%` }}
@@ -170,19 +172,19 @@ const App: React.FC = () => {
           </div>
           
           {step > 1 && (
-            <div className="space-y-8 pt-8 border-t border-[#EFE9E4] animate-fade-enter-active">
-              <div className="space-y-1">
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Client Command</span>
-                <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A] truncate">{userData.companyName}</p>
+            <div className="space-y-10 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
+              <div className="space-y-1.5">
+                <span className="text-[9px] uppercase tracking-[0.3em] text-[#CCC] font-bold">Organization</span>
+                <p className="text-xs font-bold tracking-[0.1em] uppercase text-[#1A1A1A] truncate">{userData.companyName}</p>
               </div>
-              <div className="space-y-1">
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Operational Context</span>
-                <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.industry}</p>
+              <div className="space-y-1.5">
+                <span className="text-[9px] uppercase tracking-[0.3em] text-[#CCC] font-bold">Mandate</span>
+                <p className="text-xs font-bold tracking-[0.1em] uppercase text-[#1A1A1A]">{userData.industry}</p>
               </div>
               {userData.priority && (
-                <div className="space-y-1">
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Primary Lever</span>
-                  <p className="text-xs font-bold tracking-wider uppercase text-amber-600">{userData.priority}</p>
+                <div className="space-y-1.5">
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-[#CCC] font-bold">Primary Target</span>
+                  <p className="text-xs font-bold tracking-[0.1em] uppercase text-amber-600 leading-relaxed">{userData.priority}</p>
                 </div>
               )}
             </div>
@@ -199,24 +201,24 @@ const App: React.FC = () => {
         </div>
       }
       right={
-        <div className="space-y-12">
-          <div className="min-h-[140px] relative">
-            <p className="text-xl leading-relaxed text-[#1A1A1A] font-body-serif font-light whitespace-pre-wrap transition-all duration-500">
+        <div className="space-y-16">
+          <div className="min-h-[160px] relative">
+            <div className="text-xl leading-[1.65] text-[#1A1A1A] font-body-serif font-light whitespace-pre-wrap transition-all duration-500">
               {intelligence.notes}
               {intelligence.status === 'analyzing' && (
-                <span className="inline-block w-1.5 h-6 ml-2 bg-amber-400 animate-pulse align-middle"></span>
+                <span className="inline-block w-[3px] h-6 ml-3 bg-amber-400 animate-pulse align-middle"></span>
               )}
-            </p>
+            </div>
           </div>
 
           {intelligence.citations && intelligence.citations.length > 0 && (
-            <div className="space-y-4 pt-8 border-t border-[#EFE9E4] animate-fade-enter-active">
-              <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Market Grounding</h4>
-              <div className="space-y-3">
+            <div className="space-y-6 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
+              <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Market Grounding</h4>
+              <div className="space-y-4">
                 {intelligence.citations.map((cite, i) => (
-                  <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-[11px] text-amber-700 hover:text-amber-900 transition-colors font-medium group">
-                    <span className="opacity-40 group-hover:opacity-100">[{i+1}]</span>
-                    <span className="underline decoration-amber-200 truncate">{cite.title}</span>
+                  <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 text-[11px] text-[#444] hover:text-[#1A1A1A] transition-colors font-medium group">
+                    <span className="text-amber-600 font-bold opacity-40 group-hover:opacity-100">0{i+1}</span>
+                    <span className="underline decoration-amber-200 decoration-1 underline-offset-4 truncate">{cite.title}</span>
                   </a>
                 ))}
               </div>
@@ -224,13 +226,13 @@ const App: React.FC = () => {
           )}
 
           {intelligence.observations.length > 0 && (
-            <div className="space-y-8 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
-              <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Strategic Observations</h4>
-              <ul className="space-y-8">
+            <div className="space-y-10 pt-10 border-t border-[#EFE9E4] animate-fade-enter-active">
+              <h4 className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA]">Strategic Brief</h4>
+              <ul className="space-y-10">
                 {intelligence.observations.map((obs, i) => (
-                  <li key={i} className="flex gap-4 items-start group">
-                    <span className="text-amber-500 font-serif text-xl leading-none italic opacity-30 group-hover:opacity-100 transition-opacity">0{i+1}</span>
-                    <span className="text-[13px] leading-relaxed text-[#444] font-body-serif">{obs}</span>
+                  <li key={i} className="flex gap-5 items-start group">
+                    <span className="text-amber-500 font-serif text-2xl leading-none italic opacity-25 group-hover:opacity-100 transition-opacity">0{i+1}</span>
+                    <span className="text-sm leading-relaxed text-[#444] font-body-serif font-light">{obs}</span>
                   </li>
                 ))}
               </ul>

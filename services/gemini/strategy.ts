@@ -9,10 +9,19 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Validate business logic and map problems to systems.
+    contents: `Architect a modular AI system suite for ${userData.companyName}.
     Industry: ${userData.industry}
-    Problems: ${userData.blocker}, ${userData.manualWork}
-    Priority: ${userData.priority}`,
+    Primary Friction: ${userData.blocker}
+    Manual Bottleneck: ${userData.manualWork}
+    Strategic Priority: ${userData.priority}
+
+    TASK:
+    Identify 5 specific AI engines from our library that directly address these leaks.
+    
+    GUIDELINES:
+    - Descriptions must be concise (max 15 words).
+    - Focus on the business outcome (e.g., "Clears sales backlogs") rather than technology.
+    - Use plain, powerful business language.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
@@ -23,10 +32,13 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
           properties: {
             id: { type: Type.STRING },
             name: { type: Type.STRING },
-            description: { type: Type.STRING },
-            problem: { type: Type.STRING, description: "The specific problem this addresses" },
-            ai_system: { type: Type.STRING, description: "The system name" },
-            business_impact: { type: Type.STRING, description: "How it helps sales or marketing in one sentence" },
+            description: { 
+              type: Type.STRING, 
+              description: "A concise, jargon-free explanation of the business benefit (max 15 words)." 
+            },
+            problem: { type: Type.STRING, description: "The specific operational leak this plugs" },
+            ai_system: { type: Type.STRING, description: "The architectural system name" },
+            business_impact: { type: Type.STRING, description: "The direct revenue or time benefit in one short sentence" },
             recommended: { type: Type.BOOLEAN },
             whyItMatters: { type: Type.STRING }
           },
