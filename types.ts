@@ -1,3 +1,4 @@
+
 export interface UserData {
   fullName: string;
   companyName: string;
@@ -12,6 +13,7 @@ export interface UserData {
   readinessScore?: number;
   readinessFeedback?: string;
   roadmap?: RoadmapPhase[];
+  tasks?: DashboardTask[];
   readinessAreas?: {
     data: number;
     infrastructure: number;
@@ -24,6 +26,17 @@ export interface RoadmapPhase {
   duration: string;
   outcomes: string[];
 }
+
+export interface DashboardTask {
+  id: string;
+  title: string;
+  owner: 'Client' | 'Sun AI' | 'Automated';
+  status: 'pending' | 'in-progress' | 'completed';
+  impact: string;
+  phaseIdx: number;
+}
+
+export type DashboardTab = 'overview' | 'roadmap' | 'tasks' | 'systems' | 'settings';
 
 export interface IntelligenceState {
   status: 'idle' | 'loading' | 'analyzing' | 'complete';

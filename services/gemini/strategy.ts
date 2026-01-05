@@ -1,3 +1,4 @@
+
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
@@ -33,16 +34,16 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
 export async function getReadinessAssessment(data: UserData) {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Detailed Readiness Audit for ${data.companyName}.
-    Selected Systems: ${data.selectedSystems.join(', ')}
-    Industry: ${data.industry}
-    Description: ${data.description}
+    model: 'gemini-3-pro-preview',
+    contents: `Conduct a Strategic Readiness Assessment for ${data.companyName}.
+    Selected Architecture: ${data.selectedSystems.join(', ')}
+    Context: ${data.description}
+    Priority: ${data.priority}
     
-    Evaluate three key dimensions: Data Maturity, Technical Infrastructure, and Organizational Culture. Be critical but constructive.`,
+    Audit Data Maturity, Infrastructure, and Culture. Be direct about structural friction.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 4096 }, // Adjusted for Flash efficiency
+      thinkingConfig: { thinkingBudget: 4096 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -71,16 +72,16 @@ export async function getReadinessAssessment(data: UserData) {
 export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Final 90-Day Execution Roadmap for ${data.companyName}.
-    Systems to Implement: ${data.selectedSystems.join(', ')}
-    Executive Priority: ${data.priority}
-    Readiness Context: ${data.readinessFeedback}
+    model: 'gemini-3-pro-preview',
+    contents: `Design the 90-Day Operational Transformation Roadmap for ${data.companyName}.
+    Systems: ${data.selectedSystems.join(', ')}
+    Immediate Goal: ${data.priority}
+    Audit Feedback: ${data.readinessFeedback}
     
-    Create a highly sequenced, outcome-driven roadmap.`,
+    Sequence for maximum velocity and immediate team time-buyback.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 2048 }, // Flash-optimized reasoning
+      thinkingConfig: { thinkingBudget: 4096 },
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,

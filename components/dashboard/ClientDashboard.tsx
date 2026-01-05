@@ -1,121 +1,99 @@
 
-import React from 'react';
-import { UserData } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { UserData, DashboardTab, DashboardTask } from '../../types';
+import { DashboardShell } from './DashboardShell';
+import { OverviewTab } from './tabs/OverviewTab';
+import { TasksTab } from './tabs/TasksTab';
+import { RoadmapTab } from './tabs/RoadmapTab';
+import { SystemsTab } from './tabs/SystemsTab';
+import { useIntelligence } from '../../hooks/useIntelligence';
+import { generateTasksFromRoadmap } from '../../services/gemini/planner';
 
 interface DashboardProps {
   userData: UserData;
+  updateUserData: (data: Partial<UserData>) => void;
   resetWizard: () => void;
 }
 
-export const ClientDashboard: React.FC<DashboardProps> = ({ userData, resetWizard }) => {
-  return (
-    <div className="min-h-screen bg-[#FDFCFB] animate-fade-enter-active">
-      <div className="max-w-6xl mx-auto px-8 py-12 md:py-24">
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#EFE9E4] pb-12 gap-8">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-amber-600">Executive Command</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></div>
+export const ClientDashboard: React.FC<DashboardProps> = ({ userData, updateUserData, resetWizard }) => {
+  const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
+  const { intelligence, handleStreamingNotes } = useIntelligence();
+
+  // Generate tasks if they don't exist
+  useEffect(() => {
+    if (userData.roadmap && (!userData.tasks || userData.tasks.length === 0)) {
+      generateTasksFromRoadmap(userData).then(tasks => {
+        updateUserData({ tasks });
+      });
+    }
+  }, [userData.roadmap]);
+
+  // Contextual intelligence notes per tab
+  useEffect(() => {
+    let prompt = '';
+    switch(activeTab) {
+      case 'overview':
+        prompt = `We are reviewing the high-level mission for ${userData.companyName}. Explain why the first 30 days are purely about clearing operational clutter so that the ${userData.selectedSystems[0]} engine has a clean foundation to scale.`;
+        break;
+      case 'tasks':
+        prompt = `Looking at the execution list for ${userData.companyName}. Briefly highlight why the Founder-owned tasks are the current bottleneck and what happens to the velocity once they are cleared.`;
+        break;
+      case 'roadmap':
+        prompt = `Reviewing the strategic sequencing for ${userData.companyName}. Explain why we have prioritized ${userData.roadmap?.[0]?.title} first, specifically in the context of solving the ${userData.blocker} friction.`;
+        break;
+      case 'systems':
+        prompt = `Evaluating the ${userData.selectedSystems.length} core AI engines mapped for ${userData.companyName}. Briefly note how this architecture replaces the manual ${userData.manualWork} drag with persistent intelligence.`;
+        break;
+    }
+    if (prompt) handleStreamingNotes(prompt);
+  }, [activeTab, userData.roadmap, userData.selectedSystems, userData.companyName, userData.blocker, userData.manualWork]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview': return <OverviewTab userData={userData} />;
+      case 'tasks': return <TasksTab userData={userData} updateTasks={(tasks) => updateUserData({ tasks })} />;
+      case 'roadmap': return <RoadmapTab userData={userData} />;
+      case 'systems': return <SystemsTab userData={userData} />;
+      case 'settings': return (
+        <div className="space-y-12 animate-fade-enter-active">
+          <header className="space-y-4">
+            <h1 className="text-4xl font-serif">Command Settings</h1>
+            <p className="text-lg text-[#666] font-light font-body-serif italic">“Adjusting the strategic baseline.”</p>
+          </header>
+          
+          <div className="p-10 border border-[#EFE9E4] bg-white space-y-8">
+            <div className="space-y-2">
+              <h4 className="text-[10px] uppercase tracking-widest font-bold text-[#1A1A1A]">Data Continuity</h4>
+              <p className="text-sm text-[#777]">Your strategy is currently locked. To redesign the growth engine from scratch, initialize a system reset.</p>
             </div>
-            <h1 className="text-5xl font-serif leading-tight">{userData.companyName} Hub</h1>
-            <p className="text-lg text-[#666] font-light mt-2 font-body-serif italic">“Your blueprint for a more profitable, less stressful business.”</p>
-          </div>
-          <div className="flex flex-col items-end gap-3">
-            <div className="px-6 py-2 border border-[#1A1A1A] text-[10px] uppercase tracking-[0.2em] font-bold">Access: Executive Only</div>
-            <div className="text-[10px] text-[#999] font-medium uppercase tracking-widest">Live Updates Enabled</div>
-          </div>
-        </header>
-
-        {/* Main Hub Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-16">
-          {/* Systems Column */}
-          <div className="space-y-12">
-            <section className="space-y-6">
-              <h3 className="text-xs uppercase tracking-[0.3em] text-[#999] font-bold flex items-center gap-4">
-                Active Engines
-                <div className="flex-1 h-px bg-[#EFE9E4]"></div>
-              </h3>
-              <div className="space-y-4">
-                {userData.selectedSystems.map(s => (
-                  <div key={s} className="p-8 border border-[#EFE9E4] bg-white group hover:border-[#1A1A1A] transition-all">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-lg font-serif">{s}</span>
-                      <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-amber-600 bg-amber-50 px-2 py-1">Ready</span>
-                    </div>
-                    <p className="text-xs text-[#777] leading-relaxed">System mapped and ready to integrate with your data.</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* Pipeline Column */}
-          <div className="lg:col-span-2 space-y-12">
-            <section className="space-y-6">
-              <h3 className="text-xs uppercase tracking-[0.3em] text-[#999] font-bold flex items-center gap-4">
-                The Next 30 Days
-                <div className="flex-1 h-px bg-[#EFE9E4]"></div>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="p-10 border border-[#EFE9E4] bg-white space-y-6 shadow-sm flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-amber-600 font-bold">Current Priority</span>
-                    <h4 className="text-2xl font-serif">Month 1: The Foundation</h4>
-                    <p className="text-sm text-[#555] font-body-serif leading-relaxed">We are clearing the clutter and preparing your data so we can buy back your team's time as quickly as possible.</p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] uppercase tracking-widest font-bold text-[#AAA]">
-                      <span>Setup Progress</span>
-                      <span>5%</span>
-                    </div>
-                    <div className="w-full bg-[#EFE9E4] h-1">
-                      <div className="w-[5%] h-full bg-[#1A1A1A]"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-10 border border-amber-200 bg-amber-50/30 space-y-6 flex flex-col justify-center">
-                  <span className="text-[9px] uppercase tracking-[0.3em] text-amber-800 font-bold">Strategy Note</span>
-                  <p className="text-xl font-serif italic text-[#1A1A1A] leading-relaxed">
-                    “Fixing your <span className="underline decoration-amber-400">{userData.priority}</span> is the single fastest way to increase your margins this quarter.”
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section className="space-y-6">
-              <h3 className="text-xs uppercase tracking-[0.3em] text-[#999] font-bold flex items-center gap-4">
-                Full Plan Overview
-                <div className="flex-1 h-px bg-[#EFE9E4]"></div>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {userData.roadmap?.map((phase, idx) => (
-                  <div key={idx} className="p-6 border border-[#EFE9E4] bg-white space-y-4">
-                    <span className="text-[9px] uppercase tracking-[0.2em] text-[#AAA] font-bold">Month 0{idx+1}</span>
-                    <h5 className="text-lg font-serif leading-tight">{phase.title}</h5>
-                    <div className="text-[10px] text-amber-600 font-bold uppercase tracking-widest">{phase.duration}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
+            
+            <button 
+              onClick={resetWizard}
+              className="px-8 py-4 bg-[#1A1A1A] text-white text-[10px] uppercase tracking-[0.3em] font-bold hover:bg-[#333] transition-all"
+            >
+              Reset All Strategic Data
+            </button>
           </div>
         </div>
+      );
+      default: return null;
+    }
+  };
 
-        {/* Footer */}
-        <footer className="mt-24 pt-12 border-t border-[#EFE9E4] flex flex-col md:flex-row justify-between items-center gap-8">
-          <button 
-            onClick={resetWizard}
-            className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#999] hover:text-[#1A1A1A] transition-colors"
-          >
-            Archive Strategy & Restart
-          </button>
-          <div className="flex items-center gap-6">
-            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#CCC]">Sun AI Agency — Proprietary Growth Blueprint</span>
-            <div className="px-4 py-1.5 border border-[#EFE9E4] text-[9px] uppercase tracking-widest font-bold text-[#AAA]">REF: {Math.random().toString(36).substr(2, 6).toUpperCase()}</div>
-          </div>
-        </footer>
-      </div>
-    </div>
+  return (
+    <DashboardShell
+      userData={userData}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      centerContent={renderContent()}
+      rightContent={
+        <div className="space-y-6">
+          <p className="text-lg leading-relaxed text-[#444] font-body-serif font-light whitespace-pre-wrap">
+            {intelligence.notes}
+            {intelligence.status === 'analyzing' && <span className="inline-block w-1 h-4 ml-1 bg-amber-400 animate-pulse align-middle"></span>}
+          </p>
+        </div>
+      }
+    />
   );
 };

@@ -21,21 +21,20 @@ const App: React.FC = () => {
   const [recommendations, setRecommendations] = useState<SystemRecommendation[]>([]);
   const [assessment, setAssessment] = useState<any>(null);
 
-  // Key selection only if needed for Pro models
   const handleKeySelection = async () => {
     if (typeof window.aistudio !== 'undefined') {
       await window.aistudio.openSelectKey();
     }
   };
 
-  // Phase 1: Context Research
+  // Step 1: Initial Research Loop
   useEffect(() => {
     if (step === 1 && userData.industry && userData.description.length > 30) {
       const research = async () => {
         setIntelligence(prev => ({ 
           ...prev, 
           status: 'analyzing', 
-          notes: 'Looking at your market position and sector movement...' 
+          notes: 'Conducting market analysis and verifying sector trends...' 
         }));
         
         try {
@@ -45,127 +44,72 @@ const App: React.FC = () => {
             status: 'complete',
             notes: res.text,
             observations: [
-              "Confirmed market position via real-time research",
-              "Identified specific competitive moats in your sector",
-              "Establishing growth baseline"
+              "Competitive landscape verified via Google Search",
+              "Business model logic confirmed",
+              "Identified initial scale bottlenecks"
             ],
             citations: res.citations
           }));
         } catch (error) {
           console.error("Discovery error:", error);
+          if (error.message?.includes("not found")) handleKeySelection();
         }
       };
       research();
     }
   }, [step, userData.industry, userData.description.length]);
 
-  // Phase 2: Diagnostics Explanation
+  // Step 2-5: Dynamic State Transitions
   useEffect(() => {
-    if (step === 2) {
-      const prompt = `We are looking at where the friction is for ${userData.companyName} in the ${userData.industry} sector. Explain in simple business terms why finding these roadblocks is the first step to buying back the team's time.`;
-      handleStreamingNotes(prompt);
-
-      if (userData.industry && !industryContent) {
-        getIndustrySpecificQuestions(userData.industry, "Executive Partner")
-          .then(setIndustryContent)
-          .catch(console.error);
-      }
-      
-      setIntelligence(prev => ({
-        ...prev,
-        observations: [
-          `Finding friction in ${userData.industry}`,
-          "Mapping bottlenecks to revenue loss",
-          "Identifying hidden labor costs"
-        ]
-      }));
-    }
-  }, [step]);
-
-  // Phase 3: System Architecture
-  useEffect(() => {
-    if (step === 3) {
-      const prompt = `Designing a growth engine for ${userData.companyName}. Based on the problems with ${userData.blocker} and ${userData.manualWork}, explain how these systems will clear the clutter and speed things up.`;
-      handleStreamingNotes(prompt);
-
-      if (recommendations.length === 0) {
-        getSystemRecommendations(userData)
-          .then(res => {
+    const runStepLogic = async () => {
+      switch (step) {
+        case 2:
+          handleStreamingNotes(`Contextualizing the diagnostic for ${userData.companyName}. Explain why identifying friction in ${userData.industry} is the prerequisite for automation.`);
+          if (!industryContent && userData.industry) {
+            const content = await getIndustrySpecificQuestions(userData.industry, "Executive Partner");
+            setIndustryContent(content);
+          }
+          break;
+        case 3:
+          handleStreamingNotes(`Designing the system architecture for ${userData.companyName}. Map the identified problems with ${userData.blocker} to the proposed AI engines.`);
+          if (recommendations.length === 0) {
+            const res = await getSystemRecommendations(userData);
             setRecommendations(res);
-            setIntelligence(prev => ({ 
-              ...prev, 
-              observations: [
-                "Prioritizing ease of use and speed",
-                "Aligning tools with your core growth goals",
-                "Focusing on the first 90 days"
-              ] 
-            }));
-          })
-          .catch(err => {
-            console.error("Architecture recommendation error:", err);
-            if (err.message?.includes("not found")) handleKeySelection();
-          });
+          }
+          break;
+        case 4:
+          handleStreamingNotes(`Analyzing operational readiness for ${userData.companyName}. Detail the importance of data hygiene and cultural buy-in for this specific roadmap.`);
+          if (!assessment) {
+            const res = await getReadinessAssessment(userData);
+            setAssessment(res);
+            updateUserData({ 
+              readinessScore: res.score, 
+              readinessFeedback: res.feedback,
+              readinessAreas: res.areaScores
+            });
+          }
+          break;
+        case 5:
+          handleStreamingNotes(`Finalizing the 90-day plan for ${userData.companyName}. Focus on the immediate ROI of Phase 1 and the long-term vision of a self-operating business.`);
+          if (!userData.roadmap) {
+            const res = await getRoadmap(userData);
+            updateUserData({ roadmap: res });
+          }
+          break;
       }
-    }
+    };
+    runStepLogic();
   }, [step]);
 
-  // Phase 4: Readiness Assessment
-  useEffect(() => {
-    if (step === 4) {
-      const prompt = `Looking at how ready ${userData.companyName} is to scale. Explain why clean data and solid team habits are more important than the tools themselves.`;
-      handleStreamingNotes(prompt);
-
-      getReadinessAssessment(userData)
-        .then(res => {
-          setAssessment(res);
-          updateUserData({ 
-            readinessScore: res.score, 
-            readinessFeedback: res.feedback,
-            readinessAreas: res.areaScores
-          });
-          setIntelligence(prev => ({ 
-            ...prev, 
-            observations: [
-              "Measured company scale potential",
-              "Identified risks to moving fast",
-              "Mapping out what to fix first"
-            ] 
-          }));
-        })
-        .catch(err => {
-          console.error("Readiness audit error:", err);
-          if (err.message?.includes("not found")) handleKeySelection();
-        });
-    }
-  }, [step]);
-
-  // Phase 5: Roadmap Strategy
-  useEffect(() => {
-    if (step === 5) {
-      const prompt = `Creating the final plan for ${userData.companyName}. Focus on how we move from ${userData.blocker} to a business that practically runs itself.`;
-      handleStreamingNotes(prompt);
-
-      getRoadmap(userData)
-        .then(res => {
-          updateUserData({ roadmap: res });
-          setIntelligence(prev => ({ 
-            ...prev, 
-            observations: [
-              "Sequencing for quick wins",
-              "Planning to buy back team time",
-              "Setting up the foundation"
-            ] 
-          }));
-        })
-        .catch(err => {
-          console.error("Roadmap generation error:", err);
-          if (err.message?.includes("not found")) handleKeySelection();
-        });
-    }
-  }, [step]);
-
+  // Executive Exit to Dashboard
   if (step === 6) {
-    return <ClientDashboard userData={userData} resetWizard={resetWizard} />;
+    return (
+      <ClientDashboard 
+        userData={userData} 
+        updateUserData={updateUserData} 
+        resetWizard={resetWizard} 
+      />
+    );
   }
 
   const renderLeft = () => (
@@ -182,8 +126,8 @@ const App: React.FC = () => {
       <div className="space-y-8 pt-8 border-t border-[#EFE9E4]">
         {step > 1 && (
           <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Organization</span>
-            <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.companyName}</p>
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Client</span>
+            <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A] truncate">{userData.companyName}</p>
           </div>
         )}
         {step > 1 && (
@@ -194,7 +138,7 @@ const App: React.FC = () => {
         )}
         {step > 2 && userData.priority && (
           <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Goal</span>
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Mandate</span>
             <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.priority}</p>
           </div>
         )}
@@ -216,7 +160,7 @@ const App: React.FC = () => {
           <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Market Sources</h4>
           <div className="space-y-2">
             {intelligence.citations.map((cite, i) => (
-              <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="block text-xs text-amber-700 hover:text-amber-900 transition-colors font-medium underline decoration-amber-200">
+              <a key={i} href={cite.uri} target="_blank" rel="noopener noreferrer" className="block text-xs text-amber-700 hover:text-amber-900 transition-colors font-medium underline decoration-amber-200 truncate">
                 [{i+1}] {cite.title}
               </a>
             ))}
@@ -226,7 +170,7 @@ const App: React.FC = () => {
 
       {intelligence.observations.length > 0 && (
         <div className="space-y-8 pt-10 border-t border-[#EFE9E4]">
-          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Partner Notes</h4>
+          <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Partner Observations</h4>
           <ul className="space-y-6">
             {intelligence.observations.map((obs, i) => (
               <li key={i} className="flex gap-6 items-start">
@@ -238,7 +182,7 @@ const App: React.FC = () => {
         </div>
       )}
       
-      <div className="pt-8 border-t border-[#EFE9E4]">
+      <div className="pt-8 border-t border-[#EFE9E4] mt-auto">
         <button 
           onClick={handleKeySelection}
           className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#CCC] hover:text-[#1A1A1A] transition-colors"
