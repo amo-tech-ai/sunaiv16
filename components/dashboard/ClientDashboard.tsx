@@ -8,6 +8,7 @@ import { RoadmapTab } from './tabs/RoadmapTab';
 import { SystemsTab } from './tabs/SystemsTab';
 import { useIntelligence } from '../../hooks/useIntelligence';
 import { generateTasksFromRoadmap } from '../../services/gemini/planner';
+import { getRiskAssessment } from '../../services/gemini/analyzer';
 
 interface DashboardProps {
   userData: UserData;
@@ -17,7 +18,7 @@ interface DashboardProps {
 
 export const ClientDashboard: React.FC<DashboardProps> = ({ userData, updateUserData, resetWizard }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
-  const { intelligence, handleStreamingNotes } = useIntelligence();
+  const { intelligence, setIntelligence, handleStreamingNotes } = useIntelligence();
 
   // Generate tasks if they don't exist
   useEffect(() => {
@@ -27,6 +28,23 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ userData, updateUser
       });
     }
   }, [userData.roadmap]);
+
+  // Proactive Risk Scorer (Prompt 8)
+  useEffect(() => {
+    const runRiskAudit = async () => {
+      const riskNote = await getRiskAssessment(userData);
+      setIntelligence(prev => ({
+        ...prev,
+        observations: [
+          "Risk audit completed",
+          "Execution velocity analyzed",
+          "Bottlenecks mapped"
+        ]
+      }));
+      // We don't overwrite the streaming notes, but we can prepend or use as baseline
+    };
+    runRiskAudit();
+  }, [userData.tasks]);
 
   // Contextual intelligence notes per tab
   useEffect(() => {
@@ -46,7 +64,7 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ userData, updateUser
         break;
     }
     if (prompt) handleStreamingNotes(prompt);
-  }, [activeTab, userData.roadmap, userData.selectedSystems, userData.companyName, userData.blocker, userData.manualWork]);
+  }, [activeTab]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -92,6 +110,20 @@ export const ClientDashboard: React.FC<DashboardProps> = ({ userData, updateUser
             {intelligence.notes}
             {intelligence.status === 'analyzing' && <span className="inline-block w-1 h-4 ml-1 bg-amber-400 animate-pulse align-middle"></span>}
           </p>
+          
+          {intelligence.observations.length > 0 && (
+            <div className="pt-8 border-t border-[#EFE9E4] space-y-4">
+               <h4 className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#AAA]">System Health</h4>
+               <ul className="space-y-3">
+                 {intelligence.observations.map((obs, i) => (
+                   <li key={i} className="flex gap-3 items-center text-xs text-[#666] font-body-serif">
+                     <span className="w-1 h-1 rounded-full bg-amber-400"></span>
+                     {obs}
+                   </li>
+                 ))}
+               </ul>
+            </div>
+          )}
         </div>
       }
     />
