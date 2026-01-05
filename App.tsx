@@ -34,7 +34,7 @@ const App: React.FC = () => {
         setIntelligence(prev => ({ 
           ...prev, 
           status: 'analyzing', 
-          notes: 'Conducting market analysis and verifying sector trends...' 
+          notes: 'Synthesizing market intelligence and verifying digital presence...' 
         }));
         
         try {
@@ -50,9 +50,9 @@ const App: React.FC = () => {
             notes: res.text,
             detectedModel: res.detectedModel,
             observations: [
-              "Competitive landscape verified via Google Search",
-              `Business model identified: ${res.detectedModel}`,
-              "Identified initial scale bottlenecks"
+              "Market landscape verified via Google Search",
+              `Business model: ${res.detectedModel}`,
+              "Verified primary scale bottlenecks for this sector"
             ],
             citations: res.citations
           }));
@@ -70,9 +70,11 @@ const App: React.FC = () => {
     const runStepLogic = async () => {
       switch (step) {
         case 2:
-          handleStreamingNotes(`Contextualizing the diagnostic for ${userData.companyName}. Explain why identifying friction in ${userData.industry} is the prerequisite for automation.`);
+          handleStreamingNotes(`
+            We are identifying friction in ${userData.companyName}'s growth path. 
+            Explain why fixing the "messy" behind-the-scenes clutter—like SKU descriptions, factory samples, and content burnout—is the only way to scale sales.
+          `);
           if (!industryContent && userData.industry) {
-            // Build rich context for the diagnostic generator
             const diagnosticContext = {
               researchResults: intelligence.notes,
               companyName: userData.companyName,
@@ -84,14 +86,14 @@ const App: React.FC = () => {
           }
           break;
         case 3:
-          handleStreamingNotes(`Designing the system architecture for ${userData.companyName}. Map the identified problems with ${userData.blocker} to the proposed AI engines.`);
+          handleStreamingNotes(`Designing the system architecture for ${userData.companyName}. Mapping the ${userData.blocker} friction to high-velocity AI engines.`);
           if (recommendations.length === 0) {
             const res = await getSystemRecommendations(userData);
             setRecommendations(res);
           }
           break;
         case 4:
-          handleStreamingNotes(`Analyzing operational readiness for ${userData.companyName}. Detail the importance of data hygiene and cultural buy-in for this specific roadmap.`);
+          handleStreamingNotes(`Evaluating the structural integrity for ${userData.companyName}. We are auditing if the current "clutter" level will break under automated scale.`);
           if (!assessment) {
             const res = await getReadinessAssessment(userData);
             setAssessment(res);
@@ -103,7 +105,7 @@ const App: React.FC = () => {
           }
           break;
         case 5:
-          handleStreamingNotes(`Finalizing the 90-day plan for ${userData.companyName}. Focus on the immediate ROI of Phase 1 and the long-term vision of a self-operating business.`);
+          handleStreamingNotes(`Constructing the 90-day execution plan for ${userData.companyName}. Phase 1: Clear the clutter. Phase 2: Scale the engine.`);
           if (!userData.roadmap) {
             const res = await getRoadmap(userData);
             updateUserData({ roadmap: res });
@@ -160,14 +162,8 @@ const App: React.FC = () => {
         )}
         {step > 1 && intelligence.detectedModel && (
           <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Model</span>
+            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Focus</span>
             <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{intelligence.detectedModel}</p>
-          </div>
-        )}
-        {step > 2 && userData.priority && (
-          <div className="space-y-1.5">
-            <span className="text-[9px] uppercase tracking-[0.2em] text-[#CCC] font-bold">Mandate</span>
-            <p className="text-xs font-bold tracking-wider uppercase text-[#1A1A1A]">{userData.priority}</p>
           </div>
         )}
       </div>
@@ -209,15 +205,6 @@ const App: React.FC = () => {
           </ul>
         </div>
       )}
-      
-      <div className="pt-8 border-t border-[#EFE9E4] mt-auto">
-        <button 
-          onClick={handleKeySelection}
-          className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#CCC] hover:text-[#1A1A1A] transition-colors"
-        >
-          Executive Security Key
-        </button>
-      </div>
     </div>
   );
 

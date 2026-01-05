@@ -10,7 +10,7 @@ interface StepProps {
 }
 
 export const Step1Context: React.FC<StepProps> = ({ data, updateData, nextStep }) => {
-  const industries = ["Fashion", "Retail", "Luxury Goods", "B2B SaaS", "Professional Services", "Real Estate", "E-commerce", "Hospitality", "FinTech", "Creative Agency"];
+  const industries = ["Fashion", "Retail", "Social Media Marketing", "Luxury Goods", "B2B SaaS", "Professional Services", "Real Estate", "E-commerce", "Hospitality", "FinTech", "Creative Agency"];
   const isComplete = data.fullName && data.companyName && data.industry && data.description;
 
   return (

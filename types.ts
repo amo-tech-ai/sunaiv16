@@ -56,10 +56,17 @@ export interface SystemRecommendation {
 
 export interface DiagnosticQuestionSet {
   dynamicTitle: string;
+  salesQuestion: string;
   salesOptions: string[];
   salesAIFeatures: string[];
-  manualWorkOptions: string[];
-  manualWorkAIFeatures: string[];
+  salesWhy: string;
+  contentQuestion: string;
+  contentOptions: string[];
+  contentAIFeatures: string[];
+  contentWhy: string;
+  speedOptions: string[];
+  priorityQuestion: string;
   priorityOptions: string[];
   priorityAIFeatures: string[];
+  priorityWhy: string;
 }

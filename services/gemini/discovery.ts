@@ -8,22 +8,25 @@ import { getAI, SYSTEM_INSTRUCTION } from "./client";
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
   const websiteContext = website 
-    ? `Take a look at ${website}. 
-       What do they actually do? Who are they helping? 
-       Find 3 things that probably feel slow or manual for them right now based on their site setup.` 
-    : "Look at common trends for a business like this in the ${industry} niche.";
+    ? `Analyze the digital presence and storefront at ${website}. 
+       Identify:
+       - The primary business model (e.g., DTC Fashion, B2B Marketing Agency).
+       - Visible manual friction indicators (e.g., slow product updates, lack of personalization).
+       - Market positioning compared to competitors.` 
+    : `Analyze typical ${industry} bottlenecks for a brand like ${companyName}.`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: `Help me understand ${companyName} in the ${industry} space. 
-    Description: ${description}
+    Context: ${description}
     ${websiteContext}
     
-    1. What's their main way of making money? (e.g. Selling clothes online, B2B services).
-    2. What's likely slowing them down right now?
-    3. What's the 'Big Goal' they are missing out on?
+    Executive Briefing:
+    1. What is their real business model?
+    2. Where are they likely losing money or time right now? (Identify 3 "money leaks").
+    3. What is the one big growth opportunity they are missing?
     
-    Write a short, friendly summary as if we're just chatting about their business strategy.`,
+    Write a short, friendly summary with zero jargon. Use citations where you found real web data.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
@@ -40,13 +43,12 @@ export async function getBusinessIntelligence(industry: string, description: str
   return {
     text: response.text,
     citations,
-    detectedModel: response.text.match(/Business Model:?\s*([^\n\.]+)/i)?.[1]?.trim() || "Independent Business"
+    detectedModel: response.text.match(/Business Model:?\s*([^\n\.]+)/i)?.[1]?.trim() || "Growth-Focused Brand"
   };
 }
 
 /**
- * Generates a deeply personalized diagnostic.
- * Phrased in simple, everyday business language.
+ * Generates a deeply personalized diagnostic with paired AI solutions.
  */
 export async function getIndustrySpecificQuestions(industry: string, context: { 
   researchResults: string, 
@@ -57,15 +59,15 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Based on what we know about ${context.companyName}: "${context.researchResults}".
+    contents: `Based on the research for ${context.companyName}: "${context.researchResults}".
     
-    Create a simple 4-question checkup for them.
+    Create a 4-step diagnostic focused on Sales, Marketing, and Content growth.
     
     RULES:
-    - Phrasing: Use "I'm losing money because..." or "My team is stuck doing..."
-    - No corporate jargon. No "Revenue Blocks." Use "Sales Frustrations."
-    - AI Solutions: Describe them as a helpful teammate. "This bot handles all your emails" instead of "Deploying an Email Orchestration Engine."
-    - Make it feel personal to their specific niche.`,
+    - CATEGORIES: "Sales & Marketing Growth", "Online Presence & Content", "Execution Speed", and "Your #1 Priority".
+    - PHRASING: Use plain English business frustrations. E.g., "We struggle to keep up with trends on social media" or "Writing product descriptions takes too long."
+    - AI SOLUTIONS: For EVERY problem option, provide a corresponding AI Fix described as a simple win. E.g., "This handles all your social captions automatically."
+    - NICHING: Use industry-specific terms like "seasonal drops", "SKU velocity", "inventory turnover".`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 2048 },
@@ -73,19 +75,27 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          dynamicTitle: { type: Type.STRING, description: "A friendly, clear heading like 'Where does it hurt most?'" },
-          salesOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'We aren't [Result] because [Reason]'" },
-          salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This will fix it by doing [Task] for you.'" },
-          manualWorkOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'We waste too many hours on [Task]'" },
-          manualWorkAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This handles [Task] automatically.'" },
-          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'My #1 goal is to [Outcome]'" },
-          priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Phrased as 'This makes [Goal] happen faster.'" }
+          dynamicTitle: { type: Type.STRING },
+          salesQuestion: { type: Type.STRING },
+          salesOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+          salesWhy: { type: Type.STRING },
+          contentQuestion: { type: Type.STRING },
+          contentOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          contentAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+          contentWhy: { type: Type.STRING },
+          speedOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          priorityQuestion: { type: Type.STRING },
+          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING } },
+          priorityWhy: { type: Type.STRING }
         },
         required: [
           "dynamicTitle", 
-          "salesOptions", "salesAIFeatures", 
-          "manualWorkOptions", "manualWorkAIFeatures", 
-          "priorityOptions", "priorityAIFeatures"
+          "salesOptions", "salesAIFeatures", "salesWhy",
+          "contentOptions", "contentAIFeatures", "contentWhy",
+          "speedOptions",
+          "priorityOptions", "priorityAIFeatures", "priorityWhy"
         ]
       }
     }
