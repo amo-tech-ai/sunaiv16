@@ -10,9 +10,10 @@ export async function getBusinessIntelligence(industry: string, description: str
   const websiteContext = website 
     ? `Analyze the digital presence and website at ${website}. 
        Identify:
-       - Core service offerings and niche expertise.
-       - Evident manual friction (e.g., generic contact forms, lack of real-time scheduling).
-       - Current technology and market positioning.` 
+       - Core service offerings, niche expertise, and target audience.
+       - For Fashion/Retail: Assess social media footprint, influencer engagement, and visual branding.
+       - Evident manual friction (e.g., generic contact forms, lack of real-time scheduling, manual checkout processes).
+       - Current technology stack and market positioning.` 
     : "Since no website was provided, rely on current market data and sector trends for this niche.";
   
   const response = await ai.models.generateContent({
@@ -24,7 +25,8 @@ export async function getBusinessIntelligence(industry: string, description: str
     Executive Requirements:
     1. EXPLICITLY state the Business Model (e.g., Business Model: High-Ticket B2B).
     2. Extract 3-4 specific operational friction points verified through search or market context.
-    3. Identify the "Scale Ceiling" — what is preventing them from 10x growth?
+    3. For Fashion/Retail, identify if they are 'Social-First' or 'Inventory-Heavy' and note the corresponding bottleneck.
+    4. Identify the "Scale Ceiling" — what is preventing them from 10x growth?
     
     Output a professional, editorial summary for the executive.`,
     config: {
@@ -67,8 +69,9 @@ export async function getIndustrySpecificQuestions(industry: string, context: {
     
     CRITICAL REQUIREMENTS:
     - Generate 4 options for: Revenue Blocks, Operational Drag, and Strategic Priorities.
-    - For EVERY individual problem option, generate a corresponding AI Solution Feature.
-    - Use real-world jargon (e.g., "deal decay", "pipeline leakage", "SKU sprawl").
+    - If Fashion: Use terms like 'seasonal drops', 'SKU sprawl', 'social ad spend fatigue'.
+    - If Retail: Use terms like 'foot traffic', 'stockouts', 'customer loyalty', 'fulfillment latency'.
+    - For EVERY individual problem option, generate a corresponding AI Solution Feature (e.g., 'Automated SKU Orchestrator' or 'Social Sentiment Engine').
     - The AI Solution must describe the bottom-line value and the "Engine" being deployed.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,

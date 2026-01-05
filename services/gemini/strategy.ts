@@ -1,4 +1,3 @@
-
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
@@ -7,7 +6,9 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Recommend 5 specific AI systems tailored for a company in ${userData.industry} dealing with ${userData.blocker} and ${userData.manualWork}. The executive priority is ${userData.priority}.`,
+    contents: `Recommend 5 specific AI systems tailored for a company in ${userData.industry} dealing with ${userData.blocker} and ${userData.manualWork}. The executive priority is ${userData.priority}.
+    
+    If Fashion/Retail, ensure recommendations cover digital storefront optimization, social media marketing automation, and inventory turnover efficiency.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 1024 },
@@ -40,7 +41,8 @@ export async function getReadinessAssessment(data: UserData) {
     Context: ${data.description}
     Priority: ${data.priority}
     
-    Audit Data Maturity, Infrastructure, and Culture. Be direct about structural friction.`,
+    Audit Data Maturity, Infrastructure, and Culture. Be direct about structural friction. 
+    For Retail/Fashion, look specifically at inventory data hygiene and social marketing attribution.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -78,7 +80,8 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
     Immediate Goal: ${data.priority}
     Audit Feedback: ${data.readinessFeedback}
     
-    Sequence for maximum velocity and immediate team time-buyback.`,
+    Sequence for maximum velocity and immediate team time-buyback. 
+    For Fashion/Retail, prioritize 'Engine Readiness' for social traffic peaks and seasonal collections.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },

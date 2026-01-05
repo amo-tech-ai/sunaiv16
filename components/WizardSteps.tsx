@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserData, IntelligenceState, SystemRecommendation } from '../types';
 
@@ -73,7 +74,7 @@ const RadarChart: React.FC<{ scores: { data: number, infrastructure: number, cul
 };
 
 export const Step1: React.FC<StepProps> = ({ data, updateData, nextStep }) => {
-  const industries = ["Luxury Goods", "B2B SaaS", "Professional Services", "Real Estate", "E-commerce", "Hospitality", "FinTech", "Creative Agency"];
+  const industries = ["Fashion", "Retail", "Luxury Goods", "B2B SaaS", "Professional Services", "Real Estate", "E-commerce", "Hospitality", "FinTech", "Creative Agency"];
   const isComplete = data.fullName && data.companyName && data.industry && data.description;
 
   return (
