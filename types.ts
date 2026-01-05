@@ -1,4 +1,3 @@
-
 export interface UserData {
   fullName: string;
   companyName: string;
@@ -26,4 +25,13 @@ export interface IntelligenceState {
   observations: string[];
   notes: string;
   detectedModel?: string;
+  citations?: Array<{ title: string; uri: string }>;
+}
+
+export interface SystemRecommendation {
+  id: string;
+  name: string;
+  description: string;
+  whyItMatters: string;
+  recommended: boolean;
 }
