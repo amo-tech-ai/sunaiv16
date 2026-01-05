@@ -14,6 +14,46 @@ interface StepProps {
 export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextStep, prevStep, industryContent }) => {
   const isComplete = data.blocker && data.manualWork && data.speed && data.priority;
 
+  const renderOptionPair = (
+    category: 'blocker' | 'manualWork' | 'priority', 
+    label: string, 
+    options: string[] = [], 
+    aiSolutions: string[] = []
+  ) => (
+    <section className="space-y-6">
+      <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">{label}</h2>
+      <div className="grid grid-cols-1 gap-4">
+        {options.map((opt, idx) => {
+          const isSelected = data[category] === opt;
+          const solution = aiSolutions[idx];
+
+          return (
+            <div key={opt} className="space-y-2">
+              <button 
+                onClick={() => updateData({ [category]: opt })}
+                className={`w-full text-left p-6 border transition-all text-sm font-medium tracking-wide flex justify-between items-center ${isSelected ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+              >
+                <span>{opt}</span>
+                {isSelected && <span className="text-amber-400">●</span>}
+              </button>
+              
+              {isSelected && solution && (
+                <div className="p-5 bg-amber-50 border-l-2 border-amber-400 animate-fade-enter-active">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-amber-700">Proposed AI Engine Logic</span>
+                  </div>
+                  <p className="text-xs text-amber-900 font-body-serif italic leading-relaxed">
+                    “{solution}”
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+
   return (
     <div className="space-y-16 animate-fade-enter-active">
       <header>
@@ -24,37 +64,19 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
       </header>
 
       <div className="space-y-12">
-        <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Growth & Revenue</h2>
-          <p className="text-base text-[#666] font-body-serif">Where is your current process losing deals or missing opportunities?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(industryContent?.salesOptions || ["Lead follow-up", "Sales pitching", "Market position", "Closing speed"]).map((opt: string) => (
-              <button 
-                key={opt}
-                onClick={() => updateData({ blocker: opt })}
-                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.blocker === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </section>
+        {renderOptionPair(
+          'blocker', 
+          'Revenue & Acquisition', 
+          industryContent?.salesOptions, 
+          industryContent?.salesAIFeatures
+        )}
 
-        <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Team Capacity</h2>
-          <p className="text-base text-[#666] font-body-serif">What is eating most of your team's time every day?</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(industryContent?.manualWorkOptions || ["Client reporting", "Document creation", "Task management", "Admin & Support"]).map((opt: string) => (
-              <button 
-                key={opt}
-                onClick={() => updateData({ manualWork: opt })}
-                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.manualWork === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </section>
+        {renderOptionPair(
+          'manualWork', 
+          'Team Capacity', 
+          industryContent?.manualWorkOptions, 
+          industryContent?.manualWorkAIFeatures
+        )}
 
         <section className="space-y-6">
           <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Delivery Speed</h2>
@@ -72,21 +94,12 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
           </div>
         </section>
 
-        <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Strategic Priority</h2>
-          <p className="text-base text-[#666] font-body-serif">If you could fix one thing to change the game this year, what would it be?</p>
-          <div className="grid grid-cols-1 gap-4">
-            {(industryContent?.priorityOptions || ["Increasing Profit", "Buying Back Time", "Lowering Unit Costs", "Better Client Results"]).map((opt: string) => (
-              <button 
-                key={opt}
-                onClick={() => updateData({ priority: opt })}
-                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.priority === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </section>
+        {renderOptionPair(
+          'priority', 
+          'Strategic Mandate', 
+          industryContent?.priorityOptions, 
+          industryContent?.priorityAIFeatures
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 pt-8">
@@ -101,7 +114,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
           onClick={nextStep}
           className={`flex-[2] py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          Design the Growth Engine →
+          View System Architecture →
         </button>
       </div>
     </div>

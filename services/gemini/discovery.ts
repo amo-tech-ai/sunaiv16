@@ -1,15 +1,19 @@
+
 import { Type } from "@google/genai";
 import { getAI, SYSTEM_INSTRUCTION } from "./client";
 
 /**
  * Conducts research using Google Search grounding.
  */
-export async function getBusinessIntelligence(industry: string, description: string, companyName: string) {
+export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
+  const websitePrompt = website ? `Specifically analyze the website at ${website} to understand their digital maturity and service offerings.` : "";
+  
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Conduct professional research on the business model and market position of a company like ${companyName} operating in the ${industry} sector. 
+    contents: `Conduct professional research on the business model and market position of ${companyName} operating in the ${industry} sector. 
     Context: ${description}
+    ${websitePrompt}
     
     Provide:
     1. A clear identification of their business model.
@@ -34,11 +38,17 @@ export async function getBusinessIntelligence(industry: string, description: str
   };
 }
 
-export async function getIndustrySpecificQuestions(industry: string, businessModel: string) {
+/**
+ * Generates a deeply personalized diagnostic based on Step 1 research.
+ */
+export async function getIndustrySpecificQuestions(industry: string, researchContext: string) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Design a diagnostic for a ${businessModel} in the ${industry} sector.`,
+    contents: `Based on this executive research: "${researchContext}", design a customized operational diagnostic for this business in the ${industry} sector.
+    
+    For each problem category (Sales, Manual Work, Priorities), generate 4 highly specific options.
+    For EACH problem option, generate a corresponding AI Solution that describes how an AI engine would solve that specific friction point.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
@@ -47,10 +57,18 @@ export async function getIndustrySpecificQuestions(industry: string, businessMod
         properties: {
           dynamicTitle: { type: Type.STRING },
           salesOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          salesAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions corresponding 1:1 to salesOptions" },
           manualWorkOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
-          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING } }
+          manualWorkAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions corresponding 1:1 to manualWorkOptions" },
+          priorityOptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          priorityAIFeatures: { type: Type.ARRAY, items: { type: Type.STRING }, description: "AI solutions corresponding 1:1 to priorityOptions" }
         },
-        required: ["dynamicTitle", "salesOptions", "manualWorkOptions", "priorityOptions"]
+        required: [
+          "dynamicTitle", 
+          "salesOptions", "salesAIFeatures", 
+          "manualWorkOptions", "manualWorkAIFeatures", 
+          "priorityOptions", "priorityAIFeatures"
+        ]
       }
     }
   });

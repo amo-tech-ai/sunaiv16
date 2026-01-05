@@ -38,7 +38,7 @@ const App: React.FC = () => {
         }));
         
         try {
-          const res = await getBusinessIntelligence(userData.industry, userData.description, userData.companyName);
+          const res = await getBusinessIntelligence(userData.industry, userData.description, userData.companyName, userData.website);
           setIntelligence(prev => ({
             ...prev,
             status: 'complete',
@@ -66,7 +66,8 @@ const App: React.FC = () => {
         case 2:
           handleStreamingNotes(`Contextualizing the diagnostic for ${userData.companyName}. Explain why identifying friction in ${userData.industry} is the prerequisite for automation.`);
           if (!industryContent && userData.industry) {
-            const content = await getIndustrySpecificQuestions(userData.industry, "Executive Partner");
+            // Pass the research notes from step 1 into the industry diagnostic generator
+            const content = await getIndustrySpecificQuestions(userData.industry, intelligence.notes);
             setIndustryContent(content);
           }
           break;

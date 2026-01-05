@@ -53,3 +53,13 @@ export interface SystemRecommendation {
   whyItMatters: string;
   recommended: boolean;
 }
+
+export interface DiagnosticQuestionSet {
+  dynamicTitle: string;
+  salesOptions: string[];
+  salesAIFeatures: string[];
+  manualWorkOptions: string[];
+  manualWorkAIFeatures: string[];
+  priorityOptions: string[];
+  priorityAIFeatures: string[];
+}
