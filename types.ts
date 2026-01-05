@@ -1,0 +1,29 @@
+
+export interface UserData {
+  fullName: string;
+  companyName: string;
+  website: string;
+  industry: string;
+  description: string;
+  blocker: string;
+  manualWork: string;
+  speed: string;
+  priority: string;
+  selectedSystems: string[];
+  readinessScore?: number;
+  readinessFeedback?: string;
+  roadmap?: RoadmapPhase[];
+}
+
+export interface RoadmapPhase {
+  title: string;
+  duration: string;
+  outcomes: string[];
+}
+
+export interface IntelligenceState {
+  status: 'idle' | 'loading' | 'analyzing' | 'complete';
+  observations: string[];
+  notes: string;
+  detectedModel?: string;
+}
