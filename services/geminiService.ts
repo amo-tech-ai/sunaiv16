@@ -8,43 +8,69 @@ const SYSTEM_INSTRUCTION = `You are a Senior Executive Consultant at Sun AI Agen
 Your tone is premium, calm, professional, and sophisticated. 
 Avoid AI hype, buzzwords, and technical jargon. 
 Focus on business outcomes: Revenue, Speed of Execution, and Operational Efficiency. 
-You are speaking to founders and owners who value their time and clear, practical strategy.`;
+You are speaking to founders and owners who value their time and clear, practical strategy. 
+Provide concise, editorial-style feedback.`;
 
+/**
+ * Streams a narrative response for the "Sun Intelligence" right panel.
+ */
+export async function* streamConsultantResponse(prompt: string) {
+  const ai = getAI();
+  const result = await ai.models.generateContentStream({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
+      temperature: 0.7,
+    },
+  });
+
+  for await (const chunk of result) {
+    if (chunk.text) {
+      yield chunk.text;
+    }
+  }
+}
+
+/**
+ * Conducts research using Google Search grounding.
+ * Note: JSON response is not supported when using googleSearch tool.
+ */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Analyze this business for initial strategy: 
-    Company: ${companyName}
-    Industry: ${industry}
-    Description: ${description}`,
+    contents: `Conduct professional research on the business model and market position of a company like ${companyName} operating in the ${industry} sector. 
+    Context: ${description}
+    
+    Provide:
+    1. A clear identification of their business model.
+    2. Three sharp strategic observations about their current position.
+    3. A brief preliminary note on their AI implementation readiness.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          businessModel: { type: Type.STRING, description: "e.g., B2B High-Ticket Services, DTC Luxury Retail" },
-          observations: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING },
-            description: "3 strategic observations about their current position"
-          },
-          initialReadinessNote: { type: Type.STRING }
-        },
-        required: ["businessModel", "observations", "initialReadinessNote"]
-      },
-    }
+      tools: [{ googleSearch: {} }],
+    },
   });
-  return JSON.parse(response.text);
+
+  const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
+    ?.map((chunk: any) => ({
+      title: chunk.web?.title || 'Market Reference',
+      uri: chunk.web?.uri
+    }))
+    .filter((c: any) => c.uri) || [];
+
+  return {
+    text: response.text,
+    citations
+  };
 }
 
 export async function getIndustrySpecificQuestions(industry: string, businessModel: string) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Design a diagnostic for a ${businessModel} in the ${industry} sector. 
-    Focus on where revenue is lost or speed is throttled.`,
+    contents: `Design a diagnostic for a ${businessModel} in the ${industry} sector.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       responseMimeType: "application/json",
@@ -67,10 +93,7 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Based on these business problems, recommend 5 AI systems:
-    Problem: ${userData.blocker}
-    Manual Work: ${userData.manualWork}
-    Priority: ${userData.priority}`,
+    contents: `Recommend 5 AI systems for: ${userData.blocker}, ${userData.manualWork}, ${userData.priority}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 1024 },
@@ -98,9 +121,7 @@ export async function getReadinessAssessment(data: UserData) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Audit the readiness of ${data.companyName} for AI implementation.
-    Systems selected: ${data.selectedSystems.join(', ')}
-    Context: ${data.description}`,
+    contents: `Readiness audit for ${data.companyName}. Systems: ${data.selectedSystems.join(', ')}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 2048 },
@@ -124,9 +145,7 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Create a 90-day strategy for ${data.companyName}.
-    Selected systems: ${data.selectedSystems.join(', ')}
-    Targeting priority: ${data.priority}`,
+    contents: `Roadmap for ${data.companyName}. Priority: ${data.priority}`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 2048 },
