@@ -1,0 +1,99 @@
+import React from 'react';
+import { UserData, IntelligenceState } from '../../types';
+
+interface StepProps {
+  data: UserData;
+  updateData: (data: Partial<UserData>) => void;
+  nextStep: () => void;
+  intelligence: IntelligenceState;
+  industryContent: any;
+}
+
+export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextStep, industryContent }) => {
+  const isComplete = data.blocker && data.manualWork && data.speed && data.priority;
+
+  return (
+    <div className="space-y-16 animate-fade-enter-active">
+      <header>
+        <h1 className="text-4xl md:text-5xl font-serif mb-4 leading-tight">
+          {industryContent?.dynamicTitle || `Where is growth being restricted?`}
+        </h1>
+        <p className="text-lg text-[#666] font-light italic font-body-serif">“We must identify the primary friction points before designing the system.”</p>
+      </header>
+
+      <div className="space-y-12">
+        <section className="space-y-6">
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Revenue & Acquisition</h2>
+          <p className="text-base text-[#666] font-body-serif">Which area is currently the biggest blocker to growing your business?</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(industryContent?.salesOptions || ["Scaling leads", "Sales efficiency", "Market positioning", "Conversion velocity"]).map((opt: string) => (
+              <button 
+                key={opt}
+                onClick={() => updateData({ blocker: opt })}
+                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.blocker === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Operational Drag</h2>
+          <p className="text-base text-[#666] font-body-serif">Where does your team spend the most time on repetitive work?</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(industryContent?.manualWorkOptions || ["Client reporting", "Document creation", "Data orchestration", "Support handling"]).map((opt: string) => (
+              <button 
+                key={opt}
+                onClick={() => updateData({ manualWork: opt })}
+                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.manualWork === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Execution Speed</h2>
+          <p className="text-base text-[#666] font-body-serif">How long does it usually take to complete a key client action?</p>
+          <div className="flex flex-wrap gap-4">
+            {["< 24 Hours", "2-3 Days", "1 Week", "2 Weeks+"].map((opt) => (
+              <button 
+                key={opt}
+                onClick={() => updateData({ speed: opt })}
+                className={`px-8 py-3 border transition-all rounded-full text-xs uppercase tracking-widest font-bold ${data.speed === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'bg-white border-[#EFE9E4] hover:border-[#D1C7BD]'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-6">
+          <h2 className="text-sm uppercase tracking-[0.2em] font-bold text-[#1A1A1A] border-l-2 border-amber-400 pl-4">Executive Priority</h2>
+          <p className="text-base text-[#666] font-body-serif">If you could fix one thing right now, what would have the most impact?</p>
+          <div className="grid grid-cols-1 gap-4">
+            {(industryContent?.priorityOptions || ["Increasing Net Revenue", "Time Reclaiming", "Unit Cost Reduction", "Client Experience"]).map((opt: string) => (
+              <button 
+                key={opt}
+                onClick={() => updateData({ priority: opt })}
+                className={`text-left p-6 border transition-all text-sm font-medium tracking-wide ${data.priority === opt ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]' : 'border-[#EFE9E4] bg-white hover:border-[#D1C7BD]'}`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <button 
+        disabled={!isComplete}
+        onClick={nextStep}
+        className={`w-full py-6 text-sm uppercase tracking-[0.3em] font-bold transition-all ${isComplete ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
+      >
+        View Recommended Systems →
+      </button>
+    </div>
+  );
+};
