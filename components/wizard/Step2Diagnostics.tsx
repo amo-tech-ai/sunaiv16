@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserData, IntelligenceState } from '../../types';
 import { DiagnosticSkeleton } from '../ui/SkeletonLoading';
@@ -32,9 +33,9 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
       </div>
       
       <div className="grid grid-cols-1 gap-4">
-        {options.map((opt, idx) => {
+        {(options || []).map((opt, idx) => {
           const isSelected = data[category] === opt;
-          const solution = aiSolutions[idx];
+          const solution = aiSolutions?.[idx];
 
           return (
             <div key={opt} className="space-y-3">
@@ -48,11 +49,6 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
               
               {isSelected && solution && (
                 <div className="p-8 bg-[#FAF8F6] border border-amber-100/50 animate-fade-enter-active relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                    <svg width="60" height="60" viewBox="0 0 100 100">
-                      <path d="M10 50 L90 50 M50 10 L50 90" stroke="currentColor" strokeWidth="2" />
-                    </svg>
-                  </div>
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-1 h-1 rounded-full bg-amber-500"></div>
                     <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-amber-800">Proposed Strategic Fix</span>
