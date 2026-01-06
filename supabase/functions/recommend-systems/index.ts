@@ -1,5 +1,6 @@
 // Recommend Systems - Step 3
 declare const Deno: any;
+declare const process: any;
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { validateUser, getAdminClient, corsHeaders, checkRateLimit, createErrorResponse } from "../_shared/supabase.ts";
@@ -18,7 +19,9 @@ Deno.serve(async (req: Request) => {
     await checkRateLimit(org_id);
 
     const admin = getAdminClient();
-    const ai = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_API_KEY") });
+    
+    // Fix: Using process.env.API_KEY directly for initialization as per guidelines
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",

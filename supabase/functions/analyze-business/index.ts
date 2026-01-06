@@ -1,5 +1,6 @@
 // Analyze Business - Step 1 Research
 declare const Deno: any;
+declare const process: any;
 
 import { GoogleGenAI } from "@google/genai";
 import { validateUser, getAdminClient, corsHeaders, checkRateLimit, createErrorResponse } from "../_shared/supabase.ts";
@@ -41,10 +42,9 @@ Deno.serve(async (req: Request) => {
       .single();
     if (sessionErr || !session) throw new Error("Invalid session provided");
 
+    // Fix: Using process.env.API_KEY directly for initialization as per guidelines
     // 5. AI Call with Timeout
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!apiKey) throw new Error("Internal Server Error: AI Key missing");
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const aiCall = ai.models.generateContent({
       model: "gemini-3-flash-preview",

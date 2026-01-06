@@ -1,67 +1,24 @@
-# Prompt 04: URL-Driven Strategic Routing
+# Prompt 04: Strategic Navigation (URL Routing)
 
-### A) Task Reference
-- **Task ID:** #5
-- **Name:** URL-Driven State
-- **Priority:** P1 (High)
-- **Why:** Using a single `step` state variable is brittle. Users expect the "Back" button to work and to be able to bookmark the "Roadmap."
+**Role:** Senior Frontend Engineer
+**Task ID:** P3-004
+**Objective:** Transition the SPA state-machine to a RESTful URL structure.
 
-### B) Description
-Transitioning the application from a "Single Page State Machine" to a RESTful URL structure using `react-router-dom`.
+---
 
-### C) Purpose & Goals
-- [ ] Implement persistent paths: `/wizard/1`, `/wizard/2`, etc.
-- [ ] Implement dashboard paths: `/dashboard/overview`, `/dashboard/tasks`.
-- [ ] Ensure the "Back" button in the browser correctly navigates the wizard steps.
-- [ ] Handle 404s with a premium "Strategic Dead-end" page.
+### A) Description
+The current app uses a `step` variable. This task implements `react-router-dom` so that every part of the strategy has a shareable, bookmarkable URL.
 
-### D) Screens / Routes
-- **Base:** `/` (Home/Landing).
-- **Auth:** `/login`.
-- **Wizard:** `/wizard/:step`.
-- **Dashboard:** `/dashboard/:tab`.
+### B) Purpose & Goals
+- [ ] Implement paths: `/login`, `/wizard/:step`, `/dashboard/:tab`.
+- [ ] Ensure the browser's "Back" and "Forward" buttons correctly navigate the wizard steps.
+- [ ] Implement Route Guards to prevent users from skipping steps without required data.
+- [ ] Design a premium "Strategic Dead-end" (404) page.
 
-### E) UI/UX Layout (3-Panel Core Model)
-- **Left Panel (Context):** The progress bar should be driven by the current URL `:step` param, not local state.
-- **Transitions:** Use `<AnimatePresence>` to maintain the editorial fade-in effect when the URL changes.
+### C) Interaction Design
+- **Animations:** Use `<AnimatePresence>` to maintain the editorial fade-in transitions between routes.
+- **Deep Linking:** Ensure `/dashboard/tasks` lands directly on the Tasks tab if the user is authenticated.
 
-### F) User Journey (Step-by-Step)
-1. User finishes Step 1.
-2. User clicks "Continue."
-3. App calls `navigate('/wizard/2')`.
-4. Browser URL changes to `sunai.agency/wizard/2`.
-5. User hits "Back."
-6. Browser URL changes to `sunai.agency/wizard/1` and the UI reverts correctly.
-
-### G) Features & Logic
-- **Guard Logic:** If a user tries to access `/wizard/5` but hasn't completed Step 1, redirect them to Step 1.
-- **Deep Linking:** If a user is logged in and visits `/dashboard/tasks`, they should land directly on the task tab.
-
-### H) AI Agents
-- **N/A** (Infrastructure).
-
-### I) Gemini 3 Features & Tools
-- **N/A** (Infrastructure).
-
-### J) Workflows & Automations
-| Trigger | Agent / Service | Action | Output | Stored Where |
-|------|---------------|--------|--------|-------------|
-| Navigate Click | React Router | Push State | New URL | Browser History |
-
-### K) Success Criteria
-- [ ] Browser refresh on `/wizard/3` stays on Step 3.
-- [ ] Browser "Back" button works.
-- [ ] No "Flash of Step 1" when deep-linking to a higher step.
-
-### L) Production-Ready Checklist
-- [ ] UX: Scroll-to-top on route change.
-- [ ] Performance: Code-splitting routes via `React.lazy`.
-
-### M) Mermaid Diagram
-```mermaid
-graph LR
-    A[/wizard/1] -->|Next| B[/wizard/2]
-    B -->|Back| A
-    B -->|Next| C[/wizard/3]
-    C -->|Finish| D[/dashboard/overview]
-```
+### D) Success Criteria
+- [ ] Refreshing the browser on Step 4 keeps the user on Step 4.
+- [ ] URLs are clean and reflect the application state.

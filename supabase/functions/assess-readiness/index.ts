@@ -1,5 +1,6 @@
 // Assess Readiness - Step 4 Audit
 declare const Deno: any;
+declare const process: any;
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { validateUser, getAdminClient, corsHeaders, checkRateLimit, createErrorResponse } from "../_shared/supabase.ts";
@@ -34,8 +35,9 @@ Deno.serve(async (req: Request) => {
     
     const nextVersion = (latestSnapshot?.version || 0) + 1;
 
+    // Fix: Using process.env.API_KEY directly for initialization as per guidelines
     // 3. AI Audit
-    const ai = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_API_KEY") });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
       contents: `Conduct audit for ${wizard_data.companyName}: ${JSON.stringify(wizard_data)}`,

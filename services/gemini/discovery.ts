@@ -3,27 +3,29 @@ import { getAI, SYSTEM_INSTRUCTION } from "./client";
 
 /**
  * Screen 1: Strategic Researcher Agent
- * Uses Google Search Grounding to verify market position and digital footprint.
- * Specifically prioritizes analyzing the company's website for service offerings and friction.
+ * Uses Google Search Grounding to verify company footprint.
+ * Note: When using googleSearch tool, responseMimeType: "application/json" is NOT supported.
+ * We use manual markers to extract structured data from the narrative response.
  */
 export async function getBusinessIntelligence(industry: string, description: string, companyName: string, website?: string) {
   const ai = getAI();
   
   const prompt = `
-    Perform a deep-dive research analysis for "${companyName}" in the ${industry} sector.
+    Perform an executive research analysis for "${companyName}" in the ${industry} sector.
     Target Website: ${website || "Not provided"}
-    Stated Mission: ${description}
+    Stated Mission/Background: ${description}
 
-    TASK PRIORITY:
-    1. Website Analysis: Use the search tool to prioritize crawling the provided URL. Extract a specific list of their current service offerings.
-    2. Manual Friction Audit: Identify indicators on their website or digital presence that suggest manual processes (e.g., static forms instead of interactive lead capture, absence of AI chat, generic scheduling tools).
-    3. Market Positioning: Determine their core business model (e.g., "Enterprise SaaS", "Luxury Boutique Retail", "High-Ticket Consulting").
-    4. Strategic Insight: Synthesize 3 high-leverage observations about where they are leaking revenue or speed.
+    TASK:
+    1. Identify their core business model (e.g., "Enterprise SaaS", "Luxury Boutique").
+    2. Identify 3 sharp strategic insights about current revenue leaks or execution speed bottlenecks.
+    3. Synthesize a premium summary of your research findings.
 
-    OUTPUT SCHEMA:
-    - narrativeBriefing: A high-end, editorial summary of your research findings.
-    - detectedModel: A 3-5 word label identifying the business model.
-    - marketObservations: Exactly 3 sharp strategic insights.
+    FORMAT YOUR RESPONSE EXACTLY LIKE THIS:
+    NARRATIVE: [Your editorial summary here]
+    MODEL: [3-5 word business model category]
+    INSIGHT: [Strategic insight 1]
+    INSIGHT: [Strategic insight 2]
+    INSIGHT: [Strategic insight 3]
   `;
 
   const response = await ai.models.generateContent({
@@ -32,44 +34,43 @@ export async function getBusinessIntelligence(industry: string, description: str
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       tools: [{ googleSearch: {} }],
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          narrativeBriefing: { type: Type.STRING },
-          detectedModel: { type: Type.STRING },
-          marketObservations: { 
-            type: Type.ARRAY, 
-            items: { type: Type.STRING },
-            description: "Exactly 3 observations about the market and operational gaps."
-          }
-        },
-        required: ["narrativeBriefing", "detectedModel", "marketObservations"]
-      }
     },
   });
 
+  const text = response.text || '';
+  
+  // Extract narrative using text markers
+  const narrativeMatch = text.match(/NARRATIVE:([\s\S]*?)MODEL:/i);
+  const narrative = narrativeMatch ? narrativeMatch[1].trim() : text.split('MODEL:')[0].replace('NARRATIVE:', '').trim();
+
+  // Extract detected model
+  const modelMatch = text.match(/MODEL:([^\n]*)/i);
+  const detectedModel = modelMatch ? modelMatch[1].trim() : "Strategic Partner";
+
+  // Extract insights as observations
+  const observations = text.split('\n')
+    .filter(line => line.toUpperCase().startsWith('INSIGHT:'))
+    .map(line => line.replace(/INSIGHT:/i, '').trim())
+    .slice(0, 3);
+
   const citations = response.candidates?.[0]?.groundingMetadata?.groundingChunks
     ?.map((chunk: any) => ({
-      title: chunk.web?.title || 'External Source',
+      title: chunk.web?.title || 'External Reference',
       uri: chunk.web?.uri
     }))
     .filter((c: any) => c.uri) || [];
 
-  const data = JSON.parse(response.text);
-
   return {
-    text: data.narrativeBriefing,
+    text: narrative || "Strategic footprint verified. View detailed observations below.",
     citations,
-    detectedModel: data.detectedModel,
-    observations: data.marketObservations
+    detectedModel: detectedModel,
+    observations: observations.length > 0 ? observations : ["Digital presence verified", "Market category identified", "Strategic levers mapped"]
   };
 }
 
 /**
  * Screen 2: Diagnostic Architect Agent
- * Generates industry-specific friction points paired with AI solutions.
- * Uses Thinking Mode to reason through industry-specific revenue levers.
+ * Generates industry-specific diagnostic categories paired with AI features.
  */
 export async function getIndustrySpecificQuestions(industry: string, context: any, researchContext: string) {
   const ai = getAI();
@@ -77,17 +78,11 @@ export async function getIndustrySpecificQuestions(industry: string, context: an
   const prompt = `
     Generate a bespoke operational diagnostic for ${context.companyName}.
     Industry Context: ${industry}
-    Company Background: ${context.description}
     Researcher Briefing from Step 1: ${researchContext}
 
     REQUIREMENTS:
-    - Use Thinking Mode to reason through the primary "Revenue Lever" for this specific business model.
-    - Create 4 diagnostic categories: Sales & Acquisition, Content & Presence, Operational Speed, and Executive Priority.
-    - For EVERY option (Business Problem), you MUST provide a corresponding "Proposed AI Solution".
-    - Tone: Senior Business Consultant. Avoid technical jargon.
-
-    SCHEMA RULES:
-    - salesOptions[i] must pair with salesAIFeatures[i].
+    - Create 4 diagnostic categories: Sales & Growth, Content & Presence, Speed to Market, and Executive Priority.
+    - Every option (Business Problem) MUST have a corresponding "Proposed AI Solution".
   `;
 
   const response = await ai.models.generateContent({

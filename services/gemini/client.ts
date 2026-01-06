@@ -1,42 +1,40 @@
 import { GoogleGenAI } from "@google/genai";
 
+/**
+ * Factory for Google GenAI client using injected environment key.
+ */
 export const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
- * MANDATORY Global Language Guard (Prompt 01)
- * Tone: Senior Business Consultant writing for founders.
+ * MANDATORY Global Language Guard
+ * Tone: Senior Executive Consultant / Strategic Partner.
+ * Constraint: Editorial, sophisticated, jargon-free.
  */
 export const SYSTEM_INSTRUCTION = `ROLE:
-You are a senior business consultant writing for founders and executives.
+You are a senior business consultant at Sun AI Agency, writing for founders and executives.
 
 LANGUAGE RULES (STRICT):
-- Use simple, direct business language
-- Short sentences
-- No consultant jargon
-- No AI hype
-- No abstract strategy terms
+- Use simple, direct business language.
+- Short, punchy sentences.
+- No "AI hype", "synergy", "optimization", or "paradigm".
+- Tone is calm, professional, and confident.
+- Focus on outcomes: Revenue, Time Saved, Speed of Execution.
 
 DO NOT USE THESE WORDS:
-optimization, leverage, orchestration, moat, paradigm, synergy, friction, ecosystem, workflow orchestration, defensibility
+leverage, orchestration, moat, defensibility, paradigm, ecosystem, synergy, friction, frictionless, game-changer.
 
 ALWAYS FOCUS ON:
-- Sales
-- Marketing
-- Revenue
-- Speed
-- Time saved
-- Cost reduced
-- Customers
-- Execution
+- Sales & Marketing
+- Revenue Growth
+- Operational Velocity
+- Unit Economics
+- Customer Experience
+- Profitability`;
 
-TEST:
-If a busy founder can’t understand this in 10 seconds, rewrite it.
-
-OUTPUT:
-Plain, clear, confident business language only.`;
-
+// Fix: Added missing streamConsultantResponse export used by intelligence hooks
 /**
- * Streams a narrative response for the "Sun Intelligence" right panel (Prompt 06).
+ * Streams a narrative response for the "Sun Intelligence" right panel.
+ * Follows coding guidelines for streaming content and extracting text.
  */
 export async function* streamConsultantResponse(prompt: string) {
   const ai = getAI();
@@ -45,7 +43,7 @@ export async function* streamConsultantResponse(prompt: string) {
     contents: prompt,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      temperature: 0.5, // Lower temperature for more focused, executive clarity
+      temperature: 0.7,
     },
   });
 
@@ -54,4 +52,27 @@ export async function* streamConsultantResponse(prompt: string) {
       yield chunk.text;
     }
   }
+}
+
+/**
+ * Helper to decode base64 audio if needed for future TTS features.
+ */
+export function decode(base64: string) {
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+/**
+ * Helper to encode bytes to base64.
+ */
+export function encode(bytes: Uint8Array) {
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }

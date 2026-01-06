@@ -1,5 +1,6 @@
 // Generate Roadmap - Step 5 Finalization
 declare const Deno: any;
+declare const process: any;
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { validateUser, getAdminClient, corsHeaders, checkRateLimit, createErrorResponse } from "../_shared/supabase.ts";
@@ -23,8 +24,9 @@ Deno.serve(async (req: Request) => {
     const { data: snapshot, error: sErr } = await admin.from("context_snapshots").select("id").eq("id", snapshot_id).eq("org_id", org_id).single();
     if (sErr || !snapshot) throw new Error("Valid active snapshot not found");
 
+    // Fix: Using process.env.API_KEY directly for initialization as per guidelines
     // 2. AI Roadmap Generation
-    const ai = new GoogleGenAI({ apiKey: Deno.env.get("GEMINI_API_KEY") });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
       contents: `Plan: ${JSON.stringify(wizard_data)}`,
