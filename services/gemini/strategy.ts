@@ -4,22 +4,21 @@ import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
 
 /**
  * Screen 3: The Modular Architect
- * Recommends 5 specific AI engines from the agency library based on diagnostics.
+ * Recommends systems based on friction points.
  */
 export async function getSystemRecommendations(userData: UserData): Promise<SystemRecommendation[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Design a technical architecture suite for ${userData.companyName}.
-    PRIMARY BLOCKER: ${userData.blocker}
-    MANUAL DRAG: ${userData.manualWork}
-    PRIORITY: ${userData.priority}
+    contents: `Recommend a high-fidelity AI architecture suite for ${userData.companyName}.
+    
+    DIAGNOSTICS:
+    - Primary Blocker: ${userData.blocker}
+    - Manual Workload: ${userData.manualWork}
+    - Priority Goal: ${userData.priority}
     
     TASK:
-    1. Select the 5 most relevant AI "Engines" from a strategic library.
-    2. Provide a sophisticated name (e.g., 'Omni-Channel Lead Concierge' instead of 'Chatbot').
-    3. Define the 'Business Impact' in revenue or time terms.
-    4. Highlight one 'Optimal Configuration' (recommended: true).`,
+    Select 5 specific AI "Engines". Provide business impact and optimal configuration logic.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -48,7 +47,6 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
 
 /**
  * SVG Architecture Visualization
- * Generates a technical diagram of the selected systems.
  */
 export async function getArchitectureBlueprint(userData: UserData): Promise<string> {
   const ai = getAI();
@@ -56,38 +54,39 @@ export async function getArchitectureBlueprint(userData: UserData): Promise<stri
     model: 'gemini-3-flash-preview',
     contents: `Generate a raw SVG architectural diagram for ${userData.companyName}.
     SELECTED ENGINES: ${userData.selectedSystems.join(', ')}
-    
-    STYLE GUIDELINES:
-    - Minimalist, technical blueprint aesthetic.
-    - Transparent background.
-    - Black lines (stroke: #1A1A1A).
-    - Use 'Inter' or generic sans-serif for labels.
-    - Flow: [Client Website] --(data)--> [Sun AI Core] --(orchestration)--> [${userData.selectedSystems.join('] & [')}] --(impact)--> [ROI Outcome].
-    
-    Output ONLY raw valid <svg> XML code. No markdown formatting.`,
+    Include data flow paths. Output ONLY raw valid <svg> XML code.`,
     config: {
-      systemInstruction: "You are a Technical Systems Architect. You specialize in minimalist, high-fidelity system flow diagrams.",
+      systemInstruction: "You are a Technical Systems Architect specializing in minimalist, high-fidelity system flow diagrams.",
     }
   });
   
   let svg = response.text.trim();
-  // Cleanup any potential markdown wrapper
   svg = svg.replace(/```svg/g, '').replace(/```/g, '');
   const svgMatch = svg.match(/<svg[\s\S]*?<\/svg>/i);
   return svgMatch ? svgMatch[0] : '';
 }
 
 /**
- * Screen 4: Operational Auditor
- * Audits readiness across Data, Infrastructure, and Culture.
+ * Screen 4: Operational Auditor (Step 4)
+ * Analyzes risks and calculates maturity scores.
  */
 export async function getReadinessAssessment(data: UserData) {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Evaluate scale readiness for ${data.companyName} implementing ${data.selectedSystems.join(', ')}.`,
+    contents: `Conduct a high-stakes operational audit for ${data.companyName} as they implement ${data.selectedSystems.join(', ')}.
+    
+    CONTEXT:
+    - Industry: ${data.industry}
+    - Priority: ${data.priority}
+    - Operational Drag: ${data.manualWork}
+    
+    TASK:
+    1. Calculate scores (0-100) for Data, Infrastructure, and Culture.
+    2. Identify Phase 0 remediation actions.
+    3. Evaluate strategic confidence.`,
     config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: "You are a Senior AI Risk Auditor. Blunt, professional, and focused on operational reality.",
       thinkingConfig: { thinkingBudget: 4096 },
       responseMimeType: "application/json",
       responseSchema: {
@@ -104,8 +103,8 @@ export async function getReadinessAssessment(data: UserData) {
             required: ["data", "infrastructure", "culture"]
           },
           feedback: { type: Type.STRING },
-          risks: { type: Type.ARRAY, items: { type: Type.STRING } },
-          wins: { type: Type.ARRAY, items: { type: Type.STRING } },
+          phase0Actions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          quickWins: { type: Type.ARRAY, items: { type: Type.STRING } },
           confidence: {
             type: Type.OBJECT,
             properties: {
@@ -115,7 +114,7 @@ export async function getReadinessAssessment(data: UserData) {
             required: ["level", "reason"]
           }
         },
-        required: ["score", "areaScores", "feedback", "risks", "wins", "confidence"]
+        required: ["score", "areaScores", "feedback", "phase0Actions", "quickWins", "confidence"]
       }
     }
   });
@@ -123,13 +122,22 @@ export async function getReadinessAssessment(data: UserData) {
 }
 
 /**
- * Screen 5: Roadmap Strategist
+ * Screen 5: The Strategy Sequencer (Step 5)
+ * Sequences implementation into a 90-day execution plan.
  */
 export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Sequence 90-day execution plan for ${data.companyName}.`,
+    contents: `Sequence a 90-day execution roadmap for ${data.companyName}.
+    
+    INPUTS:
+    - Priority: ${data.priority}
+    - Architecture: ${data.selectedSystems.join(', ')}
+    - Readiness Feedback: ${data.readinessFeedback}
+    
+    TASK:
+    Create 3 distinct phases (Days 1-30, 31-60, 61-90). Focus on ROI and Foundation first.`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -141,9 +149,10 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
           properties: {
             title: { type: Type.STRING },
             duration: { type: Type.STRING },
-            outcomes: { type: Type.ARRAY, items: { type: Type.STRING } }
+            outcomes: { type: Type.ARRAY, items: { type: Type.STRING } },
+            roiProjection: { type: Type.STRING }
           },
-          required: ["title", "duration", "outcomes"]
+          required: ["title", "duration", "outcomes", "roiProjection"]
         }
       }
     }

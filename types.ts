@@ -14,6 +14,7 @@ export interface UserData {
   roadmap?: RoadmapPhase[];
   tasks?: DashboardTask[];
   svgArchitecture?: string;
+  isProjectActive?: boolean;
   confidence?: {
     level: 'High' | 'Medium' | 'Low';
     reason: string;
@@ -29,6 +30,7 @@ export interface RoadmapPhase {
   title: string;
   duration: string;
   outcomes: string[];
+  roiProjection: string;
 }
 
 export interface DashboardTask {

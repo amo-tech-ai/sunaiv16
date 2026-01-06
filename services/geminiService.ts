@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserData, RoadmapPhase, SystemRecommendation } from "../types";
 
@@ -175,9 +176,11 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
           properties: {
             title: { type: Type.STRING },
             duration: { type: Type.STRING },
-            outcomes: { type: Type.ARRAY, items: { type: Type.STRING } }
+            outcomes: { type: Type.ARRAY, items: { type: Type.STRING } },
+            // Added roiProjection to match RoadmapPhase interface
+            roiProjection: { type: Type.STRING }
           },
-          required: ["title", "duration", "outcomes"]
+          required: ["title", "duration", "outcomes", "roiProjection"]
         }
       }
     }

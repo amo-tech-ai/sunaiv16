@@ -1,24 +1,42 @@
 # Prompt 07: Launch Orchestrator (Finalization)
 
-**Role:** Senior Product Engineer  
-**Objective:** Finalize the strategic session and initialize the Executive Dashboard.
-
----
+**Role:** Principal Systems Integrator  
+**Objective:** Securely finalize the strategy session and hand off to the persistent Dashboard.
 
 ### A) Description
-This is the "Lock-in" phase. Once the user approves the strategy, the ephemeral wizard session is promoted to an "Active Project."
+The Orchestrator is the bridge between discovery and execution. It commits the final "Active Strategy" to the database and initializes the Executive Dashboard with all generated context.
 
 ### B) Purpose & Goals
-- [ ] Commit the final `context_snapshot` as `is_active = true`.
-- [ ] Map all generated tasks to the `tasks` table in Supabase.
-- [ ] Clear the local "Wizard State" once the Dashboard is successfully loaded.
-- [ ] Implement the "Fade-to-Black" premium transition into the Hub.
+- [ ] Trigger the "Task Generation" engine to populate the dashboard.
+- [ ] Commit the final `is_active` snapshot to Supabase.
+- [ ] Implement a premium "Fade-to-Black" transition into the Hub.
 
-### C) Logic & Workflows
-- **Automation:** Trigger `task-generator` Edge Function for any missing task details.
-- **Verification:** Ensure `org_id` and `project_id` are correctly linked.
+### C) Use Cases & Real-World Apps
+- **The Handoff:** Moving from the "Abstract Vision" of the wizard to the "Concrete Action" of the Dashboard.
+- **Data Continuity:** Ensuring the "Consultant" on the Dashboard remembers every nuance from the Step 2 diagnostics.
 
-### D) Success Criteria
-- [ ] User lands on Dashboard Overview with correct stats.
-- [ ] All wizard progress is permanently stored and visible in the Roadmap/Tasks tabs.
-- [ ] Returning to `/wizard` redirects the user to the Dashboard if a strategy is already active.
+### D) Screens / Routes
+- **Transition:** `/wizard/5` -> `/dashboard`.
+- **Logic:** Cleanup of transient wizard state.
+
+### E) UI/UX Layout
+- **The "Seal":** A high-fidelity confirmation screen: "Your Strategic Command is initializing."
+- **Visuals:** Minimalist loading animation showing the 3 selected engines "Loading."
+
+### F) User Journey
+1. User clicks "Open Your Hub."
+2. The UI fades.
+3. The Dashboard initializes with their company name, priority, and 90-day tasks pre-populated.
+
+### G) Features & Logic
+- **Function Calling:** Initializing the task decomposition engine.
+- **State Handoff:** Clean handoff between Wizard and Dashboard UI components.
+
+### H) Gemini 3 Intelligence Stack
+- **Role:** Systems Integrator.
+- **Feature:** Interaction Continuity.
+
+### I) Success Criteria
+- [ ] Dashboard is 100% populated on first load.
+- [ ] No wizard data is lost during the transition.
+- [ ] Returning to `/wizard` redirects to `/dashboard` (Strategy is locked).

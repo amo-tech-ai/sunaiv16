@@ -1,38 +1,42 @@
 # Prompt 01: Wizard Foundation (State & Routing)
 
-**Role:** Senior Product Engineer  
-**Objective:** Transition the Wizard from volatile React state to a persistent, URL-driven architecture.
-
----
+**Role:** Senior Full-Stack Engineer  
+**Objective:** Establish a persistent, URL-driven executive experience that ensures zero data loss.
 
 ### A) Description
-This task establishes the "Skeleton" of the Wizard. It replaces the simple `step` state variable with `react-router-dom` paths and ensures that user data is persisted to `localStorage` and synchronized with the Supabase `wizard_sessions` table.
+The foundation layer transitions the application from a simple state machine to a RESTful, multi-page wizard. It synchronizes the complex "Strategic Data Object" across browser history and persistent storage.
 
 ### B) Purpose & Goals
-- [ ] Implement URL paths: `/wizard/1` through `/wizard/5`.
-- [ ] Synchronize `userData` state with browser history (Back/Forward buttons).
-- [ ] Implement `useWizard` hook with Supabase `upsert` logic for auto-saving.
-- [ ] Ensure page refresh on `/wizard/4` does not reset the user to Step 1.
+- [ ] Implement `react-router-dom` for paths `/wizard/1` through `/wizard/5`.
+- [ ] Ensure the "Cognitive Mirror" (Left Panel) and "Consultant Feed" (Right Panel) maintain state across transitions.
+- [ ] Implement a `useWizard` hook that handles debounced auto-saves to `localStorage`.
 
-### C) Screens / Routes
+### C) Use Cases & Real-World Apps
+- **The Interrupted Executive:** A founder starts the audit on a laptop, closes it for a meeting, and resumes on a mobile device later—picking up exactly where they left off.
+- **Strategic Re-calibration:** A user goes back to Step 2 to change a priority; the app dynamically recalculates subsequent step placeholders without clearing valid data.
+
+### D) Screens / Routes
 - **Routes:** `/wizard/:step`
-- **Component:** `App.tsx` and `hooks/useWizard.ts`
+- **Fallback:** Redirect to Step 1 if foundational context (Name/Company) is missing.
 
-### D) UI/UX Layout
-- **Left Panel:** The progress bar and "Cognitive Mirror" summary must update based on the URL parameter.
-- **Center Panel:** Smooth fade-out/fade-in transitions between steps using `AnimatePresence`.
+### E) UI/UX Layout (3-Panel Core)
+- **Transitions:** Use `framer-motion` for editorial cross-fades between routes.
+- **Persistence Indicator:** A small, amber "Synchronized" dot in the footer that pulses during background saves.
 
-### E) User Journey
-1. User starts at `/wizard/1`.
-2. User enters data; a "Saving..." indicator appears in the sidebar.
-3. User navigates to `/wizard/2`.
-4. User refreshes the page; the app re-hydrates Step 1 and 2 data and lands the user back on Step 2.
+### F) User Journey
+1. User enters the site and is routed to `/wizard/1`.
+2. As they progress, the URL updates (e.g., `/wizard/3`).
+3. If they refresh, the `useWizard` hook rehydrates the state from storage and returns them to the active URL.
 
-### F) Features & Logic
-- **Persistence:** Debounced auto-save (1s) to `wizard_answers` table in Supabase.
-- **Guards:** Prevent users from deep-linking to Step 5 without completing Step 1.
+### G) Features & Logic
+- **Interactions API:** Logic to handle the "Back" button while preserving AI-generated intelligence in the Right Panel.
+- **Data Guard:** Schema validation on mount to prevent corrupt state from loading.
 
-### G) Success Criteria
-- [ ] Browser refresh maintains all form data.
-- [ ] Browser "Back" button works as expected.
-- [ ] Supabase `wizard_answers` reflects the latest UI state.
+### H) Gemini 3 Intelligence Stack
+- **Modality:** Text-based state mapping.
+- **Role:** Structural integrity.
+
+### I) Success Criteria
+- [ ] Refreshing the browser does not result in a blank form.
+- [ ] Browser "Back" button moves through steps correctly.
+- [ ] `localStorage` matches the UI state 1:1.

@@ -1,29 +1,43 @@
 # Prompt 06: The Strategy Sequencer (Step 5)
 
-**Role:** Senior Product Strategist  
-**Objective:** Synthesize all data into a 90-day execution roadmap.
-
----
+**Role:** Senior Executive Strategist  
+**Objective:** Synthesize all discovery data into a phased, outcome-oriented 90-day execution plan.
 
 ### A) Description
-The final step of the wizard. This agent sequences implementation into 3 phases (Foundation, Scale, Optimization) and decomposes them into actionable tasks for the dashboard.
+The Sequencer creates the vertical "Flight Path" for implementation. It prioritizes actions based on the "Readiness" gaps and the "Executive Priorities" selected earlier.
 
 ### B) Purpose & Goals
-- [ ] Generate a 3-phase vertical roadmap with specific outcomes.
-- [ ] Decompose phases into 5-10 "High-Velocity Tasks."
-- [ ] Assign ownership: `client` (Founder) vs `ai` (Automation).
-- [ ] Calculate ROI projections (Time/Revenue).
+- [ ] Generate 3 Phases (Foundation, Scale, Optimization).
+- [ ] Decompose phases into 4-6 specific "Strategic Outcomes."
+- [ ] Project "Strategic ROI" for each phase.
 
-### C) Logic & Tools
-- **Model:** `gemini-3-pro-preview`
-- **Thinking Budget:** 4096 tokens.
-- **Workflow:** When the user clicks "Initialize Hub," tasks are committed to the `tasks` table.
+### C) Use Cases & Real-World Apps
+- **The "Speed-First" Founder:** Roadmap prioritizes "Quick Wins" in Month 1 to reclaim 10 hours/week, funding the complex Month 2/3 integrations.
+- **The "Stability-First" Enterprise:** Roadmap prioritizes "Data Architecture" in Month 1, with zero user-facing launches until Month 2.
 
-### D) User Journey
-1. User reviews the 90-day plan.
-2. User sees "Phase 1: Foundation" is 60% Founder-led tasks (Cleaning data).
-3. User clicks "Initialize," triggering the transition to the Dashboard.
+### D) Screens / Routes
+- **Route:** `/wizard/5`
+- **UI:** Vertical Timeline.
 
-### E) Success Criteria
-- [ ] Roadmap phases follow a logical technical sequence.
-- [ ] Tasks are realistic and categorized by owner.
+### E) UI/UX Layout
+- **Editorial Timeline:** Vertical border with large round nodes.
+- **Outcome Cards:** High-fidelity cards listing phase results.
+- **Right Panel:** A "Consultant's Final Word" summarising the 90-day philosophy.
+
+### F) User Journey
+1. User reviews the 3-phase plan.
+2. They see exactly what will be achieved every 30 days.
+3. They click "Initialize Dashboard" to move to the execution phase.
+
+### G) Features & Logic
+- **Strategic Sequencing:** Logic that ensures "Phase 1" outcomes are technical prerequisites for "Phase 2."
+- **Thinking Budget:** Deep reasoning on phase duration vs. readiness score.
+
+### H) Gemini 3 Intelligence Stack
+- **Model:** Gemini 3 Pro.
+- **Feature:** Gemini Thinking (4096 token budget).
+- **Tool:** Phased Object Schema.
+
+### I) Success Criteria
+- [ ] Roadmap logic is sound (Foundation -> Scale -> Optimization).
+- [ ] Outcomes are specific, measurable business results.

@@ -1,26 +1,42 @@
 # Prompt 03: The Diagnostic Architect (Step 2)
 
-**Role:** Senior Strategic Consultant  
-**Objective:** Transition from generic forms to a bespoke industry audit.
-
----
+**Role:** Principal Strategic Consultant  
+**Objective:** Perform a deep-reasoning operational audit to identify specific growth bottlenecks.
 
 ### A) Description
-Step 2 generates an industry-specific diagnostic based on the research from Step 1. It pairs every "Business Problem" with a "Proposed AI Fix" to educate the executive on the value of the platform.
+This agent utilizes high-fidelity reasoning to generate industry-specific diagnostics. It moves from generic questions to "High-Friction Scenarios" tailored to the data captured in Step 1.
 
 ### B) Purpose & Goals
-- [ ] Use Thinking Mode to reason through the primary bottlenecks for the detected business model.
-- [ ] Generate 4 diagnostic blocks: Growth, Content, Speed, and Priority.
-- [ ] Pair every multiple-choice option with a hidden "AI Engine Preview" that reveals upon selection.
+- [ ] Use **Gemini Thinking** to map identified friction to bespoke AI solutions.
+- [ ] Generate 4 diagnostic categories (Sales, Content, Speed, Priority).
+- [ ] Pair every multiple-choice "Problem" with a "Proposed Strategic Fix."
 
-### C) Logic & Tools
-- **Model:** `gemini-3-pro-preview`
-- **Thinking Budget:** 2048 tokens.
-- **Input:** `researchContext` from Step 1.
+### C) Use Cases & Real-World Apps
+- **Real Estate Growth:** AI detects "Lead Leakage." Diagnostic asks: "How do you handle Zillow leads after 6 PM?" Pairing the answer with a "24/7 Lead Concierge" fix.
+- **SaaS Scaling:** AI detects "Technical Debt." Diagnostic asks: "What is your developer-to-customer ratio?" Pairing the answer with a "Code Documentation Engine" fix.
 
-### D) UI/UX (Center Panel)
-- **Selection Interaction:** When an option is clicked, an amber-bordered card appears below it: "Solution: Automated SKU Orchestration. Business Impact: Reclaims 15 hours/week."
+### D) Screens / Routes
+- **Route:** `/wizard/2`
+- **Logic:** Ingests `researchContext` from Step 1.
 
-### E) Success Criteria
-- [ ] > 90% of questions use terminology specific to the user's industry.
-- [ ] The "Proposed Fix" connects directly to the selected "Problem."
+### E) UI/UX Layout
+- **The Pairing Card:** When a user selects an option, a card expands below it using the **Lora (Serif)** font, explaining the "Proposed Strategic Fix."
+- **Architect's Note:** A persistent section in the center panel explaining the "Why" behind the diagnostic logic.
+
+### F) User Journey
+1. User sees questions specifically about their sub-industry (e.g., "Luxury Watch Retail").
+2. They select a pain point.
+3. The AI immediately explains how a specific engine solves that pain point, building "Solution Intent."
+
+### G) Features & Logic
+- **Structured Outputs:** Enforcing 1:1 pairing of options and solutions.
+- **Thinking Mode:** Allocating budget to ensure questions aren't generic.
+
+### H) Gemini 3 Intelligence Stack
+- **Model:** Gemini 3 Pro.
+- **Feature:** Gemini Thinking (2048 token budget).
+- **Tool:** Structured JSON Output.
+
+### I) Success Criteria
+- [ ] Questions use terminology relevant to the niche detected in Step 1.
+- [ ] Every selected option triggers a logical AI fix.
