@@ -4,16 +4,22 @@ import { UserData, RoadmapPhase, SystemRecommendation } from "../../types";
 
 /**
  * Screen 3: The Modular Architect
- * Recommends 5 specific AI engines from the agency library.
+ * Recommends 5 specific AI engines from the agency library based on diagnostics.
  */
 export async function getSystemRecommendations(userData: UserData): Promise<SystemRecommendation[]> {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Architect a bespoke AI system suite for ${userData.companyName}.
-    Blocker: ${userData.blocker}
-    Manual Drag: ${userData.manualWork}
-    Priority: ${userData.priority}`,
+    contents: `Design a technical architecture suite for ${userData.companyName}.
+    PRIMARY BLOCKER: ${userData.blocker}
+    MANUAL DRAG: ${userData.manualWork}
+    PRIORITY: ${userData.priority}
+    
+    TASK:
+    1. Select the 5 most relevant AI "Engines" from a strategic library.
+    2. Provide a sophisticated name (e.g., 'Omni-Channel Lead Concierge' instead of 'Chatbot').
+    3. Define the 'Business Impact' in revenue or time terms.
+    4. Highlight one 'Optimal Configuration' (recommended: true).`,
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       thinkingConfig: { thinkingBudget: 4096 },
@@ -38,6 +44,37 @@ export async function getSystemRecommendations(userData: UserData): Promise<Syst
     }
   });
   return JSON.parse(response.text);
+}
+
+/**
+ * SVG Architecture Visualization
+ * Generates a technical diagram of the selected systems.
+ */
+export async function getArchitectureBlueprint(userData: UserData): Promise<string> {
+  const ai = getAI();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Generate a raw SVG architectural diagram for ${userData.companyName}.
+    SELECTED ENGINES: ${userData.selectedSystems.join(', ')}
+    
+    STYLE GUIDELINES:
+    - Minimalist, technical blueprint aesthetic.
+    - Transparent background.
+    - Black lines (stroke: #1A1A1A).
+    - Use 'Inter' or generic sans-serif for labels.
+    - Flow: [Client Website] --(data)--> [Sun AI Core] --(orchestration)--> [${userData.selectedSystems.join('] & [')}] --(impact)--> [ROI Outcome].
+    
+    Output ONLY raw valid <svg> XML code. No markdown formatting.`,
+    config: {
+      systemInstruction: "You are a Technical Systems Architect. You specialize in minimalist, high-fidelity system flow diagrams.",
+    }
+  });
+  
+  let svg = response.text.trim();
+  // Cleanup any potential markdown wrapper
+  svg = svg.replace(/```svg/g, '').replace(/```/g, '');
+  const svgMatch = svg.match(/<svg[\s\S]*?<\/svg>/i);
+  return svgMatch ? svgMatch[0] : '';
 }
 
 /**
@@ -87,7 +124,6 @@ export async function getReadinessAssessment(data: UserData) {
 
 /**
  * Screen 5: Roadmap Strategist
- * Generates a phased 90-day plan.
  */
 export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
   const ai = getAI();
@@ -113,25 +149,4 @@ export async function getRoadmap(data: UserData): Promise<RoadmapPhase[]> {
     }
   });
   return JSON.parse(response.text);
-}
-
-/**
- * SVG Architecture Visualization
- */
-export async function getArchitectureBlueprint(userData: UserData): Promise<string> {
-  const ai = getAI();
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
-    contents: `Generate a raw SVG architectural diagram for ${userData.companyName} featuring ${userData.selectedSystems.join(', ')}. 
-    Style: Minimalist, black lines, transparent bg, Inter font nodes.
-    Flow: User Website -> AI Core -> ROI Outcome.`,
-    config: {
-      systemInstruction: "You are a Technical Systems Architect. Output raw valid SVG XML only. No markdown.",
-    }
-  });
-  
-  let svg = response.text.trim();
-  svg = svg.replace(/```svg/g, '').replace(/```/g, '');
-  const svgMatch = svg.match(/<svg[\s\S]*?<\/svg>/i);
-  return svgMatch ? svgMatch[0] : '';
 }

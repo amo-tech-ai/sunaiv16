@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UserData, IntelligenceState } from '../../types';
 import { DiagnosticSkeleton } from '../ui/SkeletonLoading';
@@ -34,6 +33,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
       
       <div className="grid grid-cols-1 gap-4">
         {(options || []).map((opt, idx) => {
+          // Internal mapping: blocker -> salesOptions, manualWork -> contentOptions
           const isSelected = data[category] === opt;
           const solution = aiSolutions?.[idx];
 
@@ -56,6 +56,11 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
                   <p className="text-base text-[#444] font-body-serif italic leading-relaxed">
                     “{solution}”
                   </p>
+                  <div className="absolute top-0 right-0 p-4 opacity-5">
+                    <svg width="60" height="60" viewBox="0 0 100 100" fill="currentColor">
+                      <path d="M50 0 L100 50 L50 100 L0 50 Z" />
+                    </svg>
+                  </div>
                 </div>
               )}
             </div>
@@ -78,14 +83,14 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
         </h1>
         <div className="max-w-md h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
         <p className="text-lg text-[#666] font-light font-body-serif italic max-w-lg">
-          We identify the specific friction points in your current model to map the precise AI engines required for scale.
+          We identification friction points in your current model to map the precise AI engines required for scale.
         </p>
       </header>
 
       <div className="space-y-24">
         {renderDiagnosticSection(
           'blocker', 
-          'Revenue & Acquisition', 
+          'Sales & Growth', 
           industryContent?.salesQuestion || "Which area represents your primary revenue bottleneck?",
           industryContent?.salesOptions, 
           industryContent?.salesAIFeatures,
@@ -94,8 +99,8 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
 
         {renderDiagnosticSection(
           'manualWork', 
-          'Brand Presence & Content', 
-          industryContent?.contentQuestion || "Where is manual content production slowing your speed-to-market?",
+          'Content & Presence', 
+          industryContent?.contentQuestion || "Where is manual work slowing your speed-to-market?",
           industryContent?.contentOptions, 
           industryContent?.contentAIFeatures,
           industryContent?.contentWhy
@@ -103,7 +108,7 @@ export const Step2Diagnostics: React.FC<StepProps> = ({ data, updateData, nextSt
 
         {renderDiagnosticSection(
           'speed', 
-          'Execution Velocity', 
+          'Operational Speed', 
           "What is the current target for your operational launch cycle?",
           industryContent?.speedOptions || ["< 24 Hours", "2-3 Days", "1 Week", "2 Weeks+"], 
           industryContent?.speedAIFeatures || [],

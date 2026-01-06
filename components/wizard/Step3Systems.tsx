@@ -29,7 +29,7 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
   const isLoading = recommendations.length === 0;
 
   return (
-    <div className="space-y-12 animate-fade-enter-active">
+    <div className="space-y-16 animate-fade-enter-active">
       <header className="space-y-6">
         <h1 className="text-4xl md:text-5xl font-serif leading-tight text-[#1A1A1A]">Design Your Architecture</h1>
         <div className="max-w-md h-px bg-gradient-to-r from-amber-400 to-transparent"></div>
@@ -46,12 +46,12 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
             <button 
               key={s.id}
               onClick={() => toggleSystem(s.name)}
-              className={`text-left p-10 border transition-all duration-500 relative group ${data.selectedSystems.includes(s.name) ? 'bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-2xl' : 'bg-white border-[#EFE9E4] hover:border-[#D1C7BD]'}`}
+              className={`text-left p-10 border transition-all duration-500 relative group overflow-hidden ${data.selectedSystems.includes(s.name) ? 'bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-2xl' : 'bg-white border-[#EFE9E4] hover:border-[#D1C7BD]'}`}
             >
               <div className="flex justify-between items-start mb-6">
                  <h3 className="text-3xl font-serif leading-none">{s.name}</h3>
                  {s.recommended && !data.selectedSystems.includes(s.name) && (
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-amber-600 bg-amber-50 px-3 py-1 border border-amber-200">Optimal Configuration</span>
+                    <span className="text-[9px] uppercase tracking-widest font-bold text-amber-600 bg-amber-50 px-3 py-1 border border-amber-200">Recommended Configuration</span>
                  )}
               </div>
               
@@ -65,10 +65,17 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
                   <p className="text-xs font-bold uppercase tracking-tight">{s.business_impact}</p>
                 </div>
                 <div className="space-y-1.5">
-                  <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Operational Target</span>
-                  <p className={`text-xs font-bold uppercase tracking-tight ${data.selectedSystems.includes(s.name) ? 'text-gray-400' : 'text-gray-500'}`}>{s.problem}</p>
+                  <span className="text-[9px] uppercase tracking-[0.3em] font-bold text-[#AAA]">Why It Matters</span>
+                  <p className={`text-xs font-bold uppercase tracking-tight ${data.selectedSystems.includes(s.name) ? 'text-gray-400' : 'text-gray-500'}`}>{s.whyItMatters}</p>
                 </div>
               </div>
+
+              {/* Selection Indicator */}
+              {data.selectedSystems.includes(s.name) && (
+                <div className="absolute top-0 right-0 p-4">
+                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                </div>
+              )}
             </button>
           ))
         )}
@@ -78,15 +85,18 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
         <div className="space-y-10 pt-16 border-t border-[#EFE9E4] animate-fade-enter-active">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h2 className="text-[11px] uppercase tracking-[0.4em] font-bold text-[#1A1A1A]">System Logic Blueprint</h2>
-              <p className="text-[10px] text-[#999] font-body-serif italic">Generated mapping of data flow and AI orchestration.</p>
+              <h2 className="text-[11px] uppercase tracking-[0.4em] font-bold text-[#1A1A1A]">Strategic Blueprint</h2>
+              <p className="text-[10px] text-[#999] font-body-serif italic">Real-time technical mapping of your selected configuration.</p>
             </div>
+            {data.svgArchitecture && (
+              <span className="text-[9px] uppercase tracking-widest font-bold text-amber-600 animate-pulse">Architecture Validated</span>
+            )}
           </div>
-          <div className="bg-[#FAF8F6] p-12 md:p-20 border border-[#EFE9E4] flex justify-center items-center overflow-hidden min-h-[350px] relative shadow-inner">
+          <div className="bg-[#FAF8F6] p-12 md:p-20 border border-[#EFE9E4] flex justify-center items-center overflow-hidden min-h-[350px] relative">
             {data.svgArchitecture ? (
               <div 
                 dangerouslySetInnerHTML={{ __html: data.svgArchitecture }} 
-                className="w-full h-full flex justify-center items-center transition-opacity duration-1000 ease-in"
+                className="w-full h-full flex justify-center items-center transition-all duration-1000 ease-in"
               />
             ) : (
               <div className="flex flex-col items-center space-y-6 py-12">
@@ -96,9 +106,12 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
                     <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                   </div>
                 </div>
-                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA] animate-pulse">Drafting Strategic Architecture...</span>
+                <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#AAA] animate-pulse">Architecting Blueprint...</span>
               </div>
             )}
+            
+            {/* Blueprint Grid Overlay */}
+            <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]"></div>
           </div>
         </div>
       )}
@@ -115,7 +128,7 @@ export const Step3Systems: React.FC<StepProps> = ({ data, updateData, nextStep, 
           onClick={nextStep}
           className={`flex-[2] py-6 text-[10px] uppercase tracking-[0.4em] font-bold transition-all shadow-2xl shadow-amber-900/10 ${data.selectedSystems.length > 0 && !isLoading ? 'bg-[#1A1A1A] text-white hover:bg-[#333]' : 'bg-[#EEE] text-[#AAA] cursor-not-allowed'}`}
         >
-          Proceed to Operational Audit →
+          Assess Operational Readiness →
         </button>
       </div>
     </div>
